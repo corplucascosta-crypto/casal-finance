@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Financeiro do Casal 💰</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💑 Financeiro do Casal</h1>
+            <p>Atualizado automaticamente • Dados do Google Sheets</p>
+            <div class="last-update" id="lastUpdate"></div>
+        </header>
+
+        <!-- Resumo rápido -->
+        <section class="cards">
+            <div class="card income">
+                <h3>💰 Receitas</h3>
+                <p id="totalIncome">R$ 0,00</p>
+            </div>
+            <div class="card expense">
+                <h3>💸 Despesas</h3>
+                <p id="totalExpense">R$ 0,00</p>
+            </div>
+            <div class="card balance">
+                <h3>⚖️ Saldo</h3>
+                <p id="totalBalance">R$ 0,00</p>
+            </div>
+        </section>
+
+        <!-- Filtros -->
+        <section class="filters">
+            <h2>🔍 Filtros</h2>
+            <div class="filter-group">
+                <select id="filterPerson">
+                    <option value="all">Todos</option>
+                    <option value="LUCAS">LUCAS</option>
+                    <option value="BEATRIZ">BEATRIZ</option>
+                    <option value="CASAL">CASAL</option>
+                </select>
+                <select id="filterType">
+                    <option value="all">Todos os tipos</option>
+                    <option value="Despesa">Despesa</option>
+                    <option value="Receita">Receita</option>
+                </select>
+                <select id="filterCategory">
+                    <option value="all">Todas as categorias</option>
+                </select>
+                <input type="text" id="searchDescription" placeholder="Buscar descrição...">
+                <button id="resetFilters">Resetar Filtros</button>
+            </div>
+        </section>
+
+        <!-- Gráfico -->
+        <section class="chart-container">
+            <canvas id="expenseChart" width="400" height="200"></canvas>
+        </section>
+
+        <!-- Tabela de lançamentos -->
+        <section class="transactions">
+            <h2>📋 Lançamentos</h2>
+            <div class="table-wrapper">
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Valor</th>
+                            <th>Tipo</th>
+                            <th>Categoria</th>
+                            <th>Quem</th>
+                            <th>Pagamento</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="7">Carregando dados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script src="modules/dataLoader.js"></script>
+    <script src="modules/dashboard.js"></script>
+    <script src="modules/filters.js"></script>
+    <script src="modules/table.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

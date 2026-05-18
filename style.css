@@ -1,0 +1,160 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background: #f4f6f9;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    color: #1e293b;
+    font-size: 1.8rem;
+}
+
+.last-update {
+    font-size: 0.8rem;
+    color: #475569;
+    margin-top: 6px;
+}
+
+/* Cards */
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.card {
+    flex: 1;
+    min-width: 180px;
+    background: white;
+    padding: 20px;
+    border-radius: 24px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.card.income p { color: #10b981; font-size: 1.8rem; font-weight: bold; }
+.card.expense p { color: #ef4444; font-size: 1.8rem; font-weight: bold; }
+.card.balance p { font-size: 1.8rem; font-weight: bold; color: #3b82f6; }
+
+/* Filtros */
+.filters {
+    background: white;
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.filter-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.filter-group select, .filter-group input, .filter-group button {
+    padding: 10px 14px;
+    border-radius: 40px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.filter-group button {
+    background: #1e293b;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.filter-group button:hover {
+    background: #0f172a;
+}
+
+/* Gráfico */
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    max-width: 100%;
+}
+
+canvas {
+    max-height: 300px;
+    width: 100%;
+}
+
+/* Tabela */
+.transactions {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+th, td {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+td.positive {
+    color: #10b981;
+    font-weight: 500;
+}
+
+td.negative {
+    color: #ef4444;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+    .cards {
+        flex-direction: column;
+    }
+    .filter-group select, .filter-group input, .filter-group button {
+        width: 100%;
+    }
+    th, td {
+        font-size: 0.8rem;
+        padding: 8px 4px;
+    }
+}
