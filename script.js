@@ -1,10 +1,18 @@
 // Módulo principal
 let rawData = [];
 let filteredData = [];
+let totalReceitasVariaveis = 0;
 
 // Inicialização
 async function init() {
     console.log('Iniciando app...');
+    
+    // Verificar login
+    if (!verificarLogin()) return;
+    
+    // Carregar receitas fixas
+    loadFixedIncomes();
+    
     await loadCSVData();
     setupEventListeners();
     renderDashboard();

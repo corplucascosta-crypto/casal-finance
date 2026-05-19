@@ -1,5 +1,5 @@
 function renderDashboard() {
-    let totalIncome = 0, totalExpense = 0;
+    let totalExpense = 0;
     
     if (!filteredData || filteredData.length === 0) {
         console.log('Sem dados para renderizar dashboard');
@@ -9,15 +9,28 @@ function renderDashboard() {
         return;
     }
     
+    // Calcular despesas
     filteredData.forEach(item => {
-        if (item.tipo === 'Receita') {
-            totalIncome += item.valor;
-        }
         if (item.tipo === 'Despesa') {
             totalExpense += item.valor;
         }
     });
     
+    // Calcular receitas variáveis (do CSV)
+    totalReceitasVariaveis = 0;
+    filteredData.forEach(item => {
+        if (item.tipo === 'Receita') {
+            totalReceitasVariaveis += item.valor;
+        }
+    });
+    
+    // Calcular receitas fixas ativas
+    const totalReceitasFixas = fixedIncomes
+        .filter(inc => inc.ativo)
+        .reduce((sum, inc) => sum + inc.valor, 0);
+    
+    // Total de receitas = fixas + variáveis
+    const totalIncome = totalReceitasFixas + totalReceitasVariaveis;
     const balance = totalIncome - totalExpense;
     
     document.getElementById('totalIncome').innerHTML = `R$ ${totalIncome.toFixed(2)}`;
