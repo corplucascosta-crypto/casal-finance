@@ -6,48 +6,10 @@
     let comparisonChart = null;
     
     function initComparison() {
-        criarSectionComparativo();
         renderComparison();
     }
     
-    function criarSectionComparativo() {
-        const mainContent = document.querySelector('.main-content');
-        if (!mainContent) return;
-        
-        if (document.getElementById('comparisonSection')) return;
-        
-        const comparisonSection = document.createElement('section');
-        comparisonSection.id = 'comparisonSection';
-        comparisonSection.className = 'comparison-section';
-        comparisonSection.innerHTML = `
-            <h2 class="section-title">📊 Comparativo Mensal</h2>
-            <div class="comparison-cards">
-                <div class="comparison-card">
-                    <h4>📉 Variação mensal</h4>
-                    <p id="variacaoMensal">0%</p>
-                    <small id="variacaoTrend"></small>
-                </div>
-                <div class="comparison-card">
-                    <h4>🏆 Melhor mês</h4>
-                    <p id="melhorMes">-</p>
-                </div>
-                <div class="comparison-card">
-                    <h4>⚠️ Pior mês</h4>
-                    <p id="piorMes">-</p>
-                </div>
-            </div>
-            <div class="chart-comparison-container">
-                <canvas id="comparisonChart" width="400" height="200"></canvas>
-            </div>
-        `;
-        
-        const dashboardModule = document.getElementById('dashboardModule');
-        if (dashboardModule) {
-            dashboardModule.appendChild(comparisonSection);
-        }
-    }
-    
-    function renderComparison() {
+    window.renderComparison = function() {
         if (!window.filteredData) return;
         
         // Agrupar gastos por mês/ano
@@ -106,14 +68,17 @@
             '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez'
         };
         
-        if (melhorMes.mes) {
+        const melhorEl = document.getElementById('melhorMes');
+        const piorEl = document.getElementById('piorMes');
+        
+        if (melhorEl && melhorMes.mes) {
             const [ano, mes] = melhorMes.mes.split('-');
-            document.getElementById('melhorMes').innerHTML = `${mesesNomes[mes]}/${ano}<br><small>R$ ${melhorMes.valor.toFixed(2)}</small>`;
+            melhorEl.innerHTML = `${mesesNomes[mes]}/${ano}<br><small>R$ ${melhorMes.valor.toFixed(2)}</small>`;
         }
         
-        if (piorMes.mes) {
+        if (piorEl && piorMes.mes) {
             const [ano, mes] = piorMes.mes.split('-');
-            document.getElementById('piorMes').innerHTML = `${mesesNomes[mes]}/${ano}<br><small>R$ ${piorMes.valor.toFixed(2)}</small>`;
+            piorEl.innerHTML = `${mesesNomes[mes]}/${ano}<br><small>R$ ${piorMes.valor.toFixed(2)}</small>`;
         }
         
         // Gráfico
@@ -157,7 +122,7 @@
                 }
             });
         }
-    }
+    };
     
     document.addEventListener('DOMContentLoaded', initComparison);
 })();

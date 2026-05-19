@@ -7,16 +7,22 @@ let totalReceitasVariaveis = 0;
 async function init() {
     console.log('Iniciando app...');
     
-    // Verificar login
     if (!verificarLogin()) return;
     
-    // Carregar receitas fixas
     loadFixedIncomes();
-    
     await loadCSVData();
     setupEventListeners();
-    renderDashboard();
-    renderTable();
+    
+    // Chamar todas as funções de renderização
+    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof renderTable === 'function') renderTable();
+    if (typeof renderForecast === 'function') renderForecast();
+    if (typeof renderComparison === 'function') renderComparison();
+    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+    if (typeof renderDailyChart === 'function') renderDailyChart();
+    if (typeof renderAnalytics === 'function') setTimeout(renderAnalytics, 500);
+    if (typeof renderBudgets === 'function') setTimeout(renderBudgets, 500);
+    
     updateLastUpdateTime();
 }
 
@@ -48,8 +54,15 @@ function applyFilters() {
         return true;
     });
 
-    renderDashboard();
-    renderTable();
+    // Atualizar todas as visualizações
+    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof renderTable === 'function') renderTable();
+    if (typeof renderForecast === 'function') renderForecast();
+    if (typeof renderComparison === 'function') renderComparison();
+    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+    if (typeof renderDailyChart === 'function') renderDailyChart();
+    if (typeof renderAnalytics === 'function') renderAnalytics();
+    if (typeof renderBudgets === 'function') renderBudgets();
 }
 
 function resetFilters() {
@@ -74,5 +87,4 @@ function updateLastUpdateTime() {
     }
 }
 
-// Aguardar o DOM carregar completamente
 document.addEventListener('DOMContentLoaded', init);

@@ -6,83 +6,10 @@
     let personComparisonChart = null;
     
     function initPersonDashboard() {
-        criarSectionPessoas();
         renderPersonDashboard();
-        
-        const originalRenderDashboard = window.renderDashboard;
-        if (originalRenderDashboard) {
-            window.renderDashboard = function() {
-                originalRenderDashboard();
-                renderPersonDashboard();
-            };
-        }
     }
     
-    function criarSectionPessoas() {
-        const mainContent = document.querySelector('.main-content');
-        if (!mainContent) return;
-        
-        if (document.getElementById('personDashboardSection')) return;
-        
-        const personSection = document.createElement('section');
-        personSection.id = 'personDashboardSection';
-        personSection.className = 'person-dashboard-section';
-        personSection.innerHTML = `
-            <h2 class="section-title">👥 Dashboard por Pessoa</h2>
-            <div class="person-cards">
-                <div class="person-card lucas">
-                    <div class="person-header">👨 LUCAS</div>
-                    <div class="person-stats">
-                        <div class="stat">
-                            <span class="stat-label">Total gasto</span>
-                            <span class="stat-value" id="lucasGasto">R$ 0,00</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Média diária</span>
-                            <span class="stat-value" id="lucasMedia">R$ 0,00</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Maior gasto</span>
-                            <span class="stat-value" id="lucasMaior">R$ 0,00</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="person-card beatriz">
-                    <div class="person-header">👩 BEATRIZ</div>
-                    <div class="person-stats">
-                        <div class="stat">
-                            <span class="stat-label">Total gasto</span>
-                            <span class="stat-value" id="beatrizGasto">R$ 0,00</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Média diária</span>
-                            <span class="stat-value" id="beatrizMedia">R$ 0,00</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Maior gasto</span>
-                            <span class="stat-value" id="beatrizMaior">R$ 0,00</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="comparison-ranking">
-                <div class="ranking-card">
-                    <h4>🏆 Ranking de Economia</h4>
-                    <div id="rankingList" class="ranking-list"></div>
-                </div>
-                <div class="chart-person-container">
-                    <canvas id="personComparisonChart" width="400" height="200"></canvas>
-                </div>
-            </div>
-        `;
-        
-        const dashboardModule = document.getElementById('dashboardModule');
-        if (dashboardModule) {
-            dashboardModule.appendChild(personSection);
-        }
-    }
-    
-    function renderPersonDashboard() {
+    window.renderPersonDashboard = function() {
         if (!window.filteredData) return;
         
         const gastosPorPessoa = {
@@ -111,9 +38,13 @@
             const maiorGasto = Math.max(...dados.valores, 0);
             
             const idPrefix = pessoa.toLowerCase();
-            document.getElementById(`${idPrefix}Gasto`).innerHTML = `R$ ${total.toFixed(2)}`;
-            document.getElementById(`${idPrefix}Media`).innerHTML = `R$ ${mediaDiaria.toFixed(2)}`;
-            document.getElementById(`${idPrefix}Maior`).innerHTML = `R$ ${maiorGasto.toFixed(2)}`;
+            const gastoEl = document.getElementById(`${idPrefix}Gasto`);
+            const mediaEl = document.getElementById(`${idPrefix}Media`);
+            const maiorEl = document.getElementById(`${idPrefix}Maior`);
+            
+            if (gastoEl) gastoEl.innerHTML = `R$ ${total.toFixed(2)}`;
+            if (mediaEl) mediaEl.innerHTML = `R$ ${mediaDiaria.toFixed(2)}`;
+            if (maiorEl) maiorEl.innerHTML = `R$ ${maiorGasto.toFixed(2)}`;
         });
         
         // Ranking de economia
@@ -125,7 +56,6 @@
             { nome: 'BEATRIZ', gasto: beatrizTotal, economia: 0 }
         ];
         
-        // Quem gastou menos é o mais econômico
         const menorGasto = Math.min(lucasTotal, beatrizTotal);
         ranking.forEach(p => {
             p.economia = p.gasto - menorGasto;
@@ -175,11 +105,7 @@
                 }
             });
         }
-    }
+    };
     
     document.addEventListener('DOMContentLoaded', initPersonDashboard);
 })();
-
-// Expor função global
-window.renderPersonDashboard = renderPersonDashboard;
-

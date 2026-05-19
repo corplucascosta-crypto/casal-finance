@@ -7,19 +7,14 @@
     
     function initDailyChart() {
         preencherFiltrosAnoMes();
+        window.renderDailyChart = renderDailyChart;
         renderDailyChart();
         
-        document.getElementById('dailyChartMonth')?.addEventListener('change', renderDailyChart);
-        document.getElementById('dailyChartYear')?.addEventListener('change', renderDailyChart);
+        const monthSelect = document.getElementById('dailyChartMonth');
+        const yearSelect = document.getElementById('dailyChartYear');
         
-        // Atualizar quando os dados mudarem
-        const originalRenderDashboard = window.renderDashboard;
-        if (originalRenderDashboard) {
-            window.renderDashboard = function() {
-                originalRenderDashboard();
-                renderDailyChart();
-            };
-        }
+        if (monthSelect) monthSelect.addEventListener('change', renderDailyChart);
+        if (yearSelect) yearSelect.addEventListener('change', renderDailyChart);
     }
     
     function preencherFiltrosAnoMes() {
@@ -47,14 +42,17 @@
             yearSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
         }
         
-        // Selecionar mês atual
+        // Selecionar mês e ano atual
         const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
         monthSelect.value = mesAtual;
         yearSelect.value = anoAtual;
     }
     
     function renderDailyChart() {
-        if (!window.filteredData) return;
+        if (!window.filteredData) {
+            console.log('Aguardando dados...');
+            return;
+        }
         
         const month = document.getElementById('dailyChartMonth')?.value;
         const year = document.getElementById('dailyChartYear')?.value;
@@ -93,7 +91,12 @@
         if (dailyChart) dailyChart.destroy();
         
         if (diasOrdenados.length === 0) {
-            ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
+            const context = ctx.getContext('2d');
+            context.clearRect(0, 0, ctx.width, ctx.height);
+            context.fillStyle = '#94a3b8';
+            context.font = '14px Inter';
+            context.textAlign = 'center';
+            context.fillText('Nenhum dado para o período selecionado', ctx.width / 2, ctx.height / 2);
             return;
         }
         

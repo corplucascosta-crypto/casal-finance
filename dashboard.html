@@ -83,7 +83,7 @@
             </div>
         </div>
 
-        <!-- MÓDULO: DASHBOARD -->
+        <!-- MÓDULO: DASHBOARD (apenas insights, previsão e gráfico diário) -->
         <div id="dashboardModule" class="module active">
             <!-- Total de Despesas -->
             <section class="cards">
@@ -155,16 +155,12 @@
                 </div>
             </section>
 
-            <!-- Gráfico de Gastos por Dia com Filtro -->
+            <!-- Gráfico de Gastos por Dia -->
             <section class="daily-chart-section">
                 <h2 class="section-title">📅 Gastos por Dia</h2>
                 <div class="daily-chart-controls">
-                    <select id="dailyChartMonth">
-                        <option value="">Selecione o mês</option>
-                    </select>
-                    <select id="dailyChartYear">
-                        <option value="">Selecione o ano</option>
-                    </select>
+                    <select id="dailyChartMonth"></select>
+                    <select id="dailyChartYear"></select>
                 </div>
                 <div class="daily-chart-container">
                     <canvas id="dailyChart" width="400" height="200"></canvas>
@@ -375,7 +371,7 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr><td colspan="7">Carregando dados...</td</tr>
+                            <tr><td colspan="7">Carregando dados...</td</td>
                         </tbody>
                     </table>
                 </div>
@@ -423,7 +419,7 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Scripts em ordem correta -->
     <script src="modules/auth.js"></script>
     <script src="modules/fixedIncome.js"></script>
     <script src="modules/dataLoader.js"></script>
