@@ -1,7 +1,7 @@
 function renderTable() {
     const tbody = document.getElementById('tableBody');
     
-    if (filteredData.length === 0) {
+    if (!filteredData || filteredData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7">Nenhum lançamento encontrado.</td></tr>';
         return;
     }

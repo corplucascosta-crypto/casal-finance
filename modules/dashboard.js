@@ -2,8 +2,12 @@ function renderDashboard() {
     let totalIncome = 0, totalExpense = 0;
     
     filteredData.forEach(item => {
-        if (item.tipo === 'Receita') totalIncome += item.valor;
-        if (item.tipo === 'Despesa') totalExpense += item.valor;
+        if (item.tipo === 'Receita') {
+            totalIncome += item.valor;
+        }
+        if (item.tipo === 'Despesa') {
+            totalExpense += item.valor;
+        }
     });
     
     const balance = totalIncome - totalExpense;
@@ -16,15 +20,15 @@ function renderDashboard() {
     const expenseByCategory = {};
     filteredData.forEach(item => {
         if (item.tipo === 'Despesa') {
-            const cat = item.categoria;
+            const cat = item.categoria || 'Outros';
             expenseByCategory[cat] = (expenseByCategory[cat] || 0) + item.valor;
         }
     });
     
     const ctx = document.getElementById('expenseChart').getContext('2d');
-    if (expenseChart) expenseChart.destroy();
+    if (window.expenseChart) window.expenseChart.destroy();
     
-    expenseChart = new Chart(ctx, {
+    window.expenseChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: Object.keys(expenseByCategory),
