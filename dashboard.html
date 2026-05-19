@@ -61,7 +61,18 @@
             <div class="last-update" id="lastUpdate"></div>
         </header>
 
-        <!-- Módulo Dashboard (visível por padrão) -->
+        <!-- Dica do Dia -->
+        <div class="tips-container">
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <h4>Dica do Dia</h4>
+                    <p id="dailyTip">Carregando dica...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulo Dashboard -->
         <div id="dashboardModule" class="module active">
             <section class="cards">
                 <div class="card expense-card">
@@ -133,6 +144,24 @@
 
         <!-- Módulo Lançamentos -->
         <div id="transactionsModule" class="module">
+            <!-- Controles de atualização e exportação -->
+            <div class="controls-bar">
+                <div class="refresh-control">
+                    <div class="refresh-buttons">
+                        <button id="manualRefreshBtn" class="refresh-btn">🔄 Atualizar Agora</button>
+                        <button id="toggleAutoRefreshBtn" class="auto-refresh-btn active">⏱️ Auto (30s)</button>
+                    </div>
+                    <div class="refresh-status">
+                        <span id="refreshStatus">✅ Dados atualizados</span>
+                    </div>
+                </div>
+                <div class="export-buttons">
+                    <button id="exportCSVBtn" class="export-btn csv">📄 Exportar CSV</button>
+                    <button id="exportPDFBtn" class="export-btn pdf">📑 Exportar PDF</button>
+                </div>
+            </div>
+
+            <!-- Filtros -->
             <section class="filters">
                 <h2 class="section-title">🔍 Filtros</h2>
                 <div class="filter-group">
@@ -154,6 +183,43 @@
                 </div>
             </section>
 
+            <!-- Filtros Avançados -->
+            <div class="enhanced-filters">
+                <div class="date-filters">
+                    <input type="date" id="startDate" placeholder="Data inicial">
+                    <input type="date" id="endDate" placeholder="Data final">
+                    <select id="monthFilter">
+                        <option value="">Todos os meses</option>
+                        <option value="01">Janeiro</option>
+                        <option value="02">Fevereiro</option>
+                        <option value="03">Março</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Maio</option>
+                        <option value="06">Junho</option>
+                        <option value="07">Julho</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <select id="yearFilter">
+                        <option value="">Todos os anos</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button id="applyFiltersBtn" class="apply-filters">🔍 Aplicar Filtros</button>
+                    <button id="saveFilterBtn" class="save-filter">💾 Salvar Filtro</button>
+                    <select id="loadFilterSelect" class="load-filter">
+                        <option value="">Carregar filtro...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabela -->
             <section class="transactions">
                 <h2 class="section-title">📋 Lançamentos</h2>
                 <div class="table-wrapper">
@@ -199,6 +265,7 @@
         </div>
     </div>
 
+    <!-- Scripts em ordem correta -->
     <script src="modules/auth.js"></script>
     <script src="modules/fixedIncome.js"></script>
     <script src="modules/dataLoader.js"></script>
@@ -207,15 +274,10 @@
     <script src="modules/table.js"></script>
     <script src="modules/analytics.js"></script>
     <script src="modules/menu.js"></script>
-    <script src="script.js"></script>
     <script src="modules/autoRefresh.js"></script>
     <script src="modules/export.js"></script>
     <script src="modules/filtersEnhanced.js"></script>
     <script src="modules/notifications.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
-    <!-- Adicionar novos módulos antes do fechamento do body -->
-    <script src="modules/autoRefresh.js"></script>
-    <script src="modules/export.js"></script>
-    <script src="modules/filtersEnhanced.js"></script>
-    <script src="modules/notifications.js"></script>
