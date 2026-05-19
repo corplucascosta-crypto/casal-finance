@@ -4,16 +4,14 @@
     window.forecastInitialized = true;
     
     function initForecast() {
+        window.renderForecast = renderForecast;
         document.addEventListener('dadosCarregados', () => renderForecast());
         renderForecast();
     }
     
-    window.renderForecast = function() {
-        console.log('Renderizando Previsão...');
-        
+    function renderForecast() {
         if (!window.filteredData || window.filteredData.length === 0) {
             console.log('Sem dados para forecast');
-            resetForecastElements();
             return;
         }
         
@@ -21,19 +19,10 @@
         const mesAtual = String(now.getMonth() + 1).padStart(2, '0');
         const anoAtual = now.getFullYear();
         
-        // Filtrar despesas do mês atual
         const despesasMes = window.filteredData.filter(item => {
             if (item.tipo !== 'Despesa') return false;
-            let dataStr = item.dataRaw || item.data;
-            if (dataStr && dataStr.includes('/')) {
-                const partes = dataStr.split('/');
-                if (partes.length >= 3) {
-                    const mes = partes[1].padStart(2, '0');
-                    const ano = partes[2].split(' ')[0];
-                    return mes === mesAtual && ano === String(anoAtual);
-                }
-            }
-            return false;
+            const data = new Date(item.data);
+            return data.getMonth() + 1 === parseInt(mesAtual) && data.getFullYear() === anoAtual;
         });
         
         const totalGasto = despesasMes.reduce((sum, item) => sum + item.valor, 0);
@@ -45,24 +34,14 @@
         const mediaDiaria = diaAtual > 0 ? totalGasto / diaAtual : 0;
         const projecaoMensal = mediaDiaria * ultimoDiaMes;
         
-        // Calcular receitas do mês
         const receitasMes = window.filteredData.filter(item => {
             if (item.tipo !== 'Receita') return false;
-            let dataStr = item.dataRaw || item.data;
-            if (dataStr && dataStr.includes('/')) {
-                const partes = dataStr.split('/');
-                if (partes.length >= 3) {
-                    const mes = partes[1].padStart(2, '0');
-                    const ano = partes[2].split(' ')[0];
-                    return mes === mesAtual && ano === String(anoAtual);
-                }
-            }
-            return false;
+            const data = new Date(item.data);
+            return data.getMonth() + 1 === parseInt(mesAtual) && data.getFullYear() === anoAtual;
         });
         
         const totalReceitas = receitasMes.reduce((sum, item) => sum + item.valor, 0);
         
-        // Receitas fixas
         const totalReceitasFixas = (window.fixedIncomes || [])
             .filter(inc => inc.ativo)
             .reduce((sum, inc) => sum + inc.valor, 0);
@@ -71,33 +50,27 @@
         const orcamentoRestante = receitaTotal - totalGasto;
         const orcamentoPorDia = diasRestantes > 0 ? orcamentoRestante / diasRestantes : 0;
         
-        // Atualizar elementos
-        updateElement('mediaDiaria', `R$ ${mediaDiaria.toFixed(2)}`);
-        updateElement('projecaoMensal', `R$ ${projecaoMensal.toFixed(2)}`);
-        updateElement('orcamentoRestante', `R$ ${orcamentoRestante.toFixed(2)}`);
-        updateElement('orcamentoPorDia', `R$ ${orcamentoPorDia.toFixed(2)}`);
-        
-        // Destaque de cor
+        const mediaEl = document.getElementById('mediaDiaria');
+        const projecaoEl = document.getElementById('projecaoMensal');
         const orcamentoEl = document.getElementById('orcamentoRestante');
+        const porDiaEl = document.getElementById('orcamentoPorDia');
+        
+        if (mediaEl) mediaEl.innerHTML = `R$ ${mediaDiaria.toFixed(2)}`;
+        if (projecaoEl) projecaoEl.innerHTML = `R$ ${projecaoMensal.toFixed(2)}`;
+        if (orcamentoEl) orcamentoEl.innerHTML = `R$ ${orcamentoRestante.toFixed(2)}`;
+        if (porDiaEl) porDiaEl.innerHTML = `R$ ${orcamentoPorDia.toFixed(2)}`;
+        
         if (orcamentoEl) {
-            if (orcamentoRestante < 0) orcamentoEl.style.color = '#ef4444';
-            else if (orcamentoRestante < 500) orcamentoEl.style.color = '#f59e0b';
-            else orcamentoEl.style.color = '#10b981';
+            if (orcamentoRestante < 0) {
+                orcamentoEl.style.color = '#ef4444';
+            } else if (orcamentoRestante < 500) {
+                orcamentoEl.style.color = '#f59e0b';
+            } else {
+                orcamentoEl.style.color = '#10b981';
+            }
         }
         
-        console.log('Forecast - Total gasto:', totalGasto, 'Receitas:', receitaTotal);
-    };
-    
-    function resetForecastElements() {
-        updateElement('mediaDiaria', 'R$ 0,00');
-        updateElement('projecaoMensal', 'R$ 0,00');
-        updateElement('orcamentoRestante', 'R$ 0,00');
-        updateElement('orcamentoPorDia', 'R$ 0,00');
-    }
-    
-    function updateElement(id, value) {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = value;
+        console.log('Forecast atualizado - Total gasto:', totalGasto);
     }
     
     document.addEventListener('DOMContentLoaded', initForecast);
