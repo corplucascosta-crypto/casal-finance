@@ -13,15 +13,22 @@ async function init() {
     await loadCSVData();
     setupEventListeners();
     
-    // Chamar todas as funções de renderização
-    if (typeof renderDashboard === 'function') renderDashboard();
-    if (typeof renderTable === 'function') renderTable();
-    if (typeof renderForecast === 'function') renderForecast();
-    if (typeof renderComparison === 'function') renderComparison();
-    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
-    if (typeof renderDailyChart === 'function') renderDailyChart();
-    if (typeof renderAnalytics === 'function') setTimeout(renderAnalytics, 500);
-    if (typeof renderBudgets === 'function') setTimeout(renderBudgets, 500);
+    // Aguardar um pouco para garantir que os dados foram carregados
+    setTimeout(() => {
+        // Chamar todas as funções de renderização
+        if (typeof renderDashboard === 'function') renderDashboard();
+        if (typeof renderTable === 'function') renderTable();
+        if (typeof renderForecast === 'function') renderForecast();
+        if (typeof renderComparison === 'function') renderComparison();
+        if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+        if (typeof renderDailyChart === 'function') renderDailyChart();
+        if (typeof renderAnalytics === 'function') renderAnalytics();
+        if (typeof renderBudgets === 'function') renderBudgets();
+        
+        console.log('Dados carregados:', filteredData.length, 'registros');
+        console.log('Despesas:', filteredData.filter(i => i.tipo === 'Despesa').length);
+        console.log('Receitas:', filteredData.filter(i => i.tipo === 'Receita').length);
+    }, 500);
     
     updateLastUpdateTime();
 }
@@ -86,5 +93,9 @@ function updateLastUpdateTime() {
         updateEl.innerText = `Última atualização: ${now.toLocaleString()}`;
     }
 }
+
+// Expor dados globalmente para outros módulos
+window.getFilteredData = () => filteredData;
+window.getRawData = () => rawData;
 
 document.addEventListener('DOMContentLoaded', init);

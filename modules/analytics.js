@@ -1,12 +1,13 @@
 let weeklyChart = null;
-let personChart = null;
 let paymentChart = null;
 
 function renderAnalytics() {
-    if (!filteredData || filteredData.length === 0) return;
+    if (!window.filteredData || window.filteredData.length === 0) return;
+    
+    console.log('Renderizando Análises Detalhadas...');
     
     // Filtrar apenas despesas
-    const despesas = filteredData.filter(item => item.tipo === 'Despesa');
+    const despesas = window.filteredData.filter(item => item.tipo === 'Despesa');
     
     // 1. Gastos por dia da semana
     const weekDays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -19,7 +20,7 @@ function renderAnalytics() {
     });
     
     const ctxWeekly = document.getElementById('weeklyChart');
-    if (ctxWeekly) {
+    if (ctxWeekly && typeof Chart !== 'undefined') {
         if (weeklyChart) weeklyChart.destroy();
         weeklyChart = new Chart(ctxWeekly, {
             type: 'bar',
@@ -40,35 +41,7 @@ function renderAnalytics() {
         });
     }
     
-    // 2. Gastos por pessoa
-    const gastosPorPessoa = {};
-    despesas.forEach(item => {
-        const pessoa = item.quem || 'Outros';
-        gastosPorPessoa[pessoa] = (gastosPorPessoa[pessoa] || 0) + item.valor;
-    });
-    
-    const ctxPerson = document.getElementById('personChart');
-    if (ctxPerson) {
-        if (personChart) personChart.destroy();
-        personChart = new Chart(ctxPerson, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(gastosPorPessoa),
-                datasets: [{
-                    data: Object.values(gastosPorPessoa),
-                    backgroundColor: ['#3b82f6', '#ec489a', '#8b5cf6', '#f59e0b'],
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { legend: { position: 'top' } }
-            }
-        });
-    }
-    
-    // 3. Gastos por método de pagamento
+    // 2. Gastos por método de pagamento
     const gastosPorMetodo = {};
     despesas.forEach(item => {
         const metodo = item.metodo || 'Outros';
@@ -76,7 +49,7 @@ function renderAnalytics() {
     });
     
     const ctxPayment = document.getElementById('paymentChart');
-    if (ctxPayment) {
+    if (ctxPayment && typeof Chart !== 'undefined') {
         if (paymentChart) paymentChart.destroy();
         paymentChart = new Chart(ctxPayment, {
             type: 'pie',
@@ -95,4 +68,6 @@ function renderAnalytics() {
             }
         });
     }
+    
+    console.log('Análises renderizadas com', despesas.length, 'despesas');
 }
