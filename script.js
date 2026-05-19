@@ -1,7 +1,6 @@
 // Módulo principal
 let rawData = [];
 let filteredData = [];
-let totalReceitasVariaveis = 0;
 
 // Inicialização
 async function init() {
@@ -16,18 +15,16 @@ async function init() {
     // Aguardar um pouco para garantir que os dados foram carregados
     setTimeout(() => {
         // Chamar todas as funções de renderização
-        if (typeof renderDashboard === 'function') renderDashboard();
+        if (typeof window.renderDashboard === 'function') window.renderDashboard();
         if (typeof renderTable === 'function') renderTable();
-        if (typeof renderForecast === 'function') renderForecast();
-        if (typeof renderComparison === 'function') renderComparison();
-        if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
-        if (typeof renderDailyChart === 'function') renderDailyChart();
+        if (typeof window.renderForecast === 'function') window.renderForecast();
+        if (typeof window.renderComparison === 'function') window.renderComparison();
+        if (typeof window.renderPersonDashboard === 'function') window.renderPersonDashboard();
+        if (typeof window.renderDailyChart === 'function') window.renderDailyChart();
         if (typeof renderAnalytics === 'function') renderAnalytics();
-        if (typeof renderBudgets === 'function') renderBudgets();
+        if (typeof window.renderBudgets === 'function') window.renderBudgets();
         
-        console.log('Dados carregados:', filteredData.length, 'registros');
-        console.log('Despesas:', filteredData.filter(i => i.tipo === 'Despesa').length);
-        console.log('Receitas:', filteredData.filter(i => i.tipo === 'Receita').length);
+        console.log('Dados carregados:', window.filteredData?.length || 0, 'registros');
     }, 500);
     
     updateLastUpdateTime();
@@ -53,7 +50,7 @@ function applyFilters() {
     const category = document.getElementById('filterCategory')?.value || 'all';
     const search = document.getElementById('searchDescription')?.value.toLowerCase() || '';
 
-    filteredData = rawData.filter(item => {
+    window.filteredData = window.rawData.filter(item => {
         if (person !== 'all' && item.quem !== person) return false;
         if (type !== 'all' && item.tipo !== type) return false;
         if (category !== 'all' && item.categoria !== category) return false;
@@ -62,14 +59,14 @@ function applyFilters() {
     });
 
     // Atualizar todas as visualizações
-    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof window.renderDashboard === 'function') window.renderDashboard();
     if (typeof renderTable === 'function') renderTable();
-    if (typeof renderForecast === 'function') renderForecast();
-    if (typeof renderComparison === 'function') renderComparison();
-    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
-    if (typeof renderDailyChart === 'function') renderDailyChart();
+    if (typeof window.renderForecast === 'function') window.renderForecast();
+    if (typeof window.renderComparison === 'function') window.renderComparison();
+    if (typeof window.renderPersonDashboard === 'function') window.renderPersonDashboard();
+    if (typeof window.renderDailyChart === 'function') window.renderDailyChart();
     if (typeof renderAnalytics === 'function') renderAnalytics();
-    if (typeof renderBudgets === 'function') renderBudgets();
+    if (typeof window.renderBudgets === 'function') window.renderBudgets();
 }
 
 function resetFilters() {
@@ -93,9 +90,5 @@ function updateLastUpdateTime() {
         updateEl.innerText = `Última atualização: ${now.toLocaleString()}`;
     }
 }
-
-// Expor dados globalmente para outros módulos
-window.getFilteredData = () => filteredData;
-window.getRawData = () => rawData;
 
 document.addEventListener('DOMContentLoaded', init);
