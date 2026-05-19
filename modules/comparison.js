@@ -6,29 +6,40 @@
     let comparisonChart = null;
     
     function initComparison() {
+        document.addEventListener('dadosCarregados', () => renderComparison());
         renderComparison();
     }
     
     window.renderComparison = function() {
-        if (!window.filteredData) return;
+        if (!window.filteredData || window.filteredData.length === 0) {
+            console.log('Sem dados para comparativo');
+            return;
+        }
         
-        // Agrupar gastos por mês/ano
         const gastosPorMes = {};
         
         window.filteredData
             .filter(item => item.tipo === 'Despesa')
             .forEach(item => {
-                const data = new Date(item.data);
-                const mesAno = `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
-                gastosPorMes[mesAno] = (gastosPorMes[mesAno] || 0) + item.valor;
+                let mesAno;
+                if (item.dataISO) {
+                    const [ano, mes] = item.dataISO.split('-');
+                    mesAno = `${ano}-${mes}`;
+                } else if (item.dataRaw) {
+                    const partes = item.dataRaw.split('/');
+                    if (partes.length >= 3) {
+                        mesAno = `${partes[2]}-${partes[1].padStart(2, '0')}`;
+                    }
+                }
+                if (mesAno) {
+                    gastosPorMes[mesAno] = (gastosPorMes[mesAno] || 0) + item.valor;
+                }
             });
         
-        // Ordenar meses
         const mesesOrdenados = Object.keys(gastosPorMes).sort();
         
         if (mesesOrdenados.length === 0) return;
         
-        // Calcular variação
         const mesAtual = mesesOrdenados[mesesOrdenados.length - 1];
         const mesAnterior = mesesOrdenados[mesesOrdenados.length - 2];
         
@@ -50,7 +61,6 @@
             }
         }
         
-        // Melhor e pior mês
         let melhorMes = { mes: '', valor: Infinity };
         let piorMes = { mes: '', valor: 0 };
         
@@ -81,7 +91,6 @@
             piorEl.innerHTML = `${mesesNomes[mes]}/${ano}<br><small>R$ ${piorMes.valor.toFixed(2)}</small>`;
         }
         
-        // Gráfico
         const ctx = document.getElementById('comparisonChart');
         if (ctx && typeof Chart !== 'undefined') {
             if (comparisonChart) comparisonChart.destroy();
@@ -122,6 +131,8 @@
                 }
             });
         }
+        
+        console.log('Comparativo renderizado com', mesesOrdenados.length, 'meses');
     };
     
     document.addEventListener('DOMContentLoaded', initComparison);

@@ -16,9 +16,24 @@ async function loadCSVData() {
             const linha = linhas[i].trim();
             if (!linha) continue;
             
-            const colunas = linha.split(',');
+            // Parse correto de CSV com aspas
+            const colunas = [];
+            let current = '';
+            let inQuotes = false;
             
-            const data = colunas[0] || '';
+            for (let char of linha) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    colunas.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            colunas.push(current.trim());
+            
+            const dataRaw = colunas[0] || '';
             const valor = parseFloat(colunas[1]) || 0;
             const tipo = colunas[2] || '';
             const categoria = colunas[3] || 'Outros';
@@ -29,9 +44,22 @@ async function loadCSVData() {
             const descricao = colunas[8] || 'Sem descrição';
             const tipoGasto = colunas[9] || '';
             
-            if (tipo && (tipo === 'Despesa' || tipo === 'Receita') && !isNaN(valor)) {
+            // Converter data para formato ISO para ordenação
+            let dataISO = dataRaw;
+            if (dataRaw && dataRaw.includes('/')) {
+                const partes = dataRaw.split(' ');
+                const dataParte = partes[0].split('/');
+                if (dataParte.length === 3) {
+                    // Formato DD/MM/YYYY
+                    dataISO = `${dataParte[2]}-${dataParte[1].padStart(2, '0')}-${dataParte[0].padStart(2, '0')}`;
+                    if (partes[1]) dataISO += ` ${partes[1]}`;
+                }
+            }
+            
+            if (tipo && (tipo === 'Despesa' || tipo === 'Receita') && !isNaN(valor) && valor > 0) {
                 window.rawData.push({
-                    data: data,
+                    dataRaw: dataRaw,
+                    dataISO: dataISO,
                     valor: valor,
                     tipo: tipo,
                     categoria: categoria,
@@ -49,10 +77,13 @@ async function loadCSVData() {
             }
         }
         
+        // Ordenar por data
+        window.rawData.sort((a, b) => a.dataISO.localeCompare(b.dataISO));
         window.filteredData = [...window.rawData];
         
         console.log('Dados carregados:', window.rawData.length);
         console.log('Categorias encontradas:', Array.from(categoriasSet));
+        console.log('Primeiro registro:', window.rawData[0]);
         
         // Atualizar filtro de categorias
         const categorySelect = document.getElementById('filterCategory');

@@ -1,22 +1,37 @@
 let weeklyChart = null;
 let paymentChart = null;
+let personAnalyticsChart = null;
 
 function renderAnalytics() {
-    if (!window.filteredData || window.filteredData.length === 0) return;
+    if (!window.filteredData || window.filteredData.length === 0) {
+        console.log('Sem dados para análises');
+        return;
+    }
     
     console.log('Renderizando Análises Detalhadas...');
     
-    // Filtrar apenas despesas
     const despesas = window.filteredData.filter(item => item.tipo === 'Despesa');
     
     // 1. Gastos por dia da semana
     const weekDays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const gastosPorDia = new Array(7).fill(0);
+    const qtdPorDia = new Array(7).fill(0);
     
     despesas.forEach(item => {
-        const data = new Date(item.data);
-        const diaSemana = data.getDay();
-        gastosPorDia[diaSemana] += item.valor;
+        let data;
+        if (item.dataISO) {
+            data = new Date(item.dataISO);
+        } else if (item.dataRaw) {
+            const partes = item.dataRaw.split('/');
+            if (partes.length >= 3) {
+                data = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+            }
+        }
+        if (data && !isNaN(data.getDay())) {
+            const diaSemana = data.getDay();
+            gastosPorDia[diaSemana] += item.valor;
+            qtdPorDia[diaSemana]++;
+        }
     });
     
     const ctxWeekly = document.getElementById('weeklyChart');
@@ -57,7 +72,7 @@ function renderAnalytics() {
                 labels: Object.keys(gastosPorMetodo),
                 datasets: [{
                     data: Object.values(gastosPorMetodo),
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6'],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6', '#8b5cf6', '#ec489a'],
                     borderRadius: 8
                 }]
             },
@@ -71,3 +86,8 @@ function renderAnalytics() {
     
     console.log('Análises renderizadas com', despesas.length, 'despesas');
 }
+
+document.addEventListener('dadosCarregados', renderAnalytics);
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(renderAnalytics, 500);
+});

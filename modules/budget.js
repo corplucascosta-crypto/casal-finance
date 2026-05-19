@@ -9,7 +9,6 @@
         loadBudgets();
         setupBudgetEvents();
         
-        // Aguardar categorias carregarem
         setTimeout(() => {
             popularSelectCategorias();
             window.renderBudgets();
@@ -17,6 +16,10 @@
         
         document.addEventListener('categoriasAtualizadas', () => {
             popularSelectCategorias();
+            window.renderBudgets();
+        });
+        
+        document.addEventListener('dadosCarregados', () => {
             window.renderBudgets();
         });
     }
@@ -27,12 +30,25 @@
         
         categorySelect.innerHTML = '<option value="">Selecione a categoria</option>';
         
-        if (window.categoriasPersonalizadas && window.categoriasPersonalizadas.length > 0) {
+        // Usar categorias dos dados primeiro
+        const categoriasDados = new Set();
+        if (window.filteredData) {
+            window.filteredData.forEach(item => {
+                if (item.categoria && item.categoria !== 'Outros') {
+                    categoriasDados.add(item.categoria);
+                }
+            });
+        }
+        
+        if (categoriasDados.size > 0) {
+            Array.from(categoriasDados).sort().forEach(cat => {
+                categorySelect.innerHTML += `<option value="${cat}">📁 ${cat}</option>`;
+            });
+        } else if (window.categoriasPersonalizadas && window.categoriasPersonalizadas.length > 0) {
             window.categoriasPersonalizadas.forEach(cat => {
                 categorySelect.innerHTML += `<option value="${cat.nome}">${cat.icone || '📁'} ${cat.nome}</option>`;
             });
         } else {
-            // Categorias padrão
             const categoriasPadrao = ['Alimentação', 'Lazer', 'Transporte', 'Saúde', 'Educação', 'Moradia', 'Vestuário'];
             categoriasPadrao.forEach(cat => {
                 categorySelect.innerHTML += `<option value="${cat}">📁 ${cat}</option>`;
@@ -43,6 +59,7 @@
     function setupBudgetEvents() {
         const addBtn = document.getElementById('addBudgetBtn');
         if (addBtn) {
+            addBtn.removeEventListener('click', addBudget);
             addBtn.addEventListener('click', addBudget);
         }
     }
@@ -70,10 +87,10 @@
             return;
         }
         
-        const existing = budgets.find(b => b.categoria === categoria);
-        if (existing) {
-            existing.limite = limite;
-            existing.cor = cor;
+        const existingIndex = budgets.findIndex(b => b.categoria === categoria);
+        if (existingIndex >= 0) {
+            budgets[existingIndex].limite = limite;
+            budgets[existingIndex].cor = cor;
             if (window.showNotification) window.showNotification(`✏️ Meta atualizada: ${categoria}`, 'success');
         } else {
             budgets.push({
@@ -102,7 +119,6 @@
             return;
         }
         
-        // Calcular gastos atuais por categoria
         const gastosPorCategoria = {};
         if (window.filteredData && window.filteredData.length > 0) {
             window.filteredData
@@ -117,7 +133,7 @@
         
         budgets.forEach(budget => {
             const gasto = gastosPorCategoria[budget.categoria] || 0;
-            const percentual = gasto > 0 ? (gasto / budget.limite) * 100 : 0;
+            const percentual = budget.limite > 0 ? (gasto / budget.limite) * 100 : 0;
             const cor = budget.cor || '#ef4444';
             
             const div = document.createElement('div');

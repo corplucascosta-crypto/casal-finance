@@ -8,13 +8,16 @@
     function initDailyChart() {
         preencherFiltrosAnoMes();
         window.renderDailyChart = renderDailyChart;
-        renderDailyChart();
+        
+        document.addEventListener('dadosCarregados', () => renderDailyChart());
         
         const monthSelect = document.getElementById('dailyChartMonth');
         const yearSelect = document.getElementById('dailyChartYear');
         
         if (monthSelect) monthSelect.addEventListener('change', renderDailyChart);
         if (yearSelect) yearSelect.addEventListener('change', renderDailyChart);
+        
+        renderDailyChart();
     }
     
     function preencherFiltrosAnoMes() {
@@ -23,65 +26,67 @@
         
         if (!monthSelect || !yearSelect) return;
         
-        // Preencher meses
         const meses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
         ];
         
-        monthSelect.innerHTML = '<option value="">Todos os meses</option>';
+        monthSelect.innerHTML = '<option value="all">Todos os meses</option>';
         meses.forEach((mes, index) => {
             const mesNum = String(index + 1).padStart(2, '0');
             monthSelect.innerHTML += `<option value="${mesNum}">${mes}</option>`;
         });
         
-        // Preencher anos (últimos 5 anos)
-        const anoAtual = new Date().getFullYear();
-        yearSelect.innerHTML = '<option value="">Todos os anos</option>';
-        for (let ano = anoAtual; ano >= anoAtual - 4; ano--) {
-            yearSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
+        const anos = [...new Set(window.rawData?.map(d => d.dataISO?.split('-')[0]) || [])];
+        yearSelect.innerHTML = '<option value="all">Todos os anos</option>';
+        
+        if (anos.length > 0) {
+            anos.sort().reverse().forEach(ano => {
+                yearSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
+            });
+        } else {
+            const anoAtual = new Date().getFullYear();
+            for (let ano = anoAtual; ano >= anoAtual - 2; ano--) {
+                yearSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
+            }
         }
         
-        // Selecionar mês e ano atual
         const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
         monthSelect.value = mesAtual;
-        yearSelect.value = anoAtual;
+        yearSelect.value = new Date().getFullYear();
     }
     
     function renderDailyChart() {
-        if (!window.filteredData) {
-            console.log('Aguardando dados...');
+        if (!window.filteredData || window.filteredData.length === 0) {
+            console.log('Sem dados para gráfico diário');
             return;
         }
         
         const month = document.getElementById('dailyChartMonth')?.value;
         const year = document.getElementById('dailyChartYear')?.value;
         
-        // Filtrar despesas
         let despesas = window.filteredData.filter(item => item.tipo === 'Despesa');
         
-        if (month) {
+        if (month && month !== 'all') {
             despesas = despesas.filter(item => {
-                const data = new Date(item.data);
+                const data = new Date(item.dataISO);
                 return String(data.getMonth() + 1).padStart(2, '0') === month;
             });
         }
         
-        if (year) {
+        if (year && year !== 'all') {
             despesas = despesas.filter(item => {
-                const data = new Date(item.data);
+                const data = new Date(item.dataISO);
                 return data.getFullYear() === parseInt(year);
             });
         }
         
-        // Agrupar por dia
         const gastosPorDia = {};
         despesas.forEach(item => {
-            const dia = item.data.split(' ')[0];
+            const dia = item.dataRaw?.split(' ')[0] || item.dataISO?.split('T')[0];
             gastosPorDia[dia] = (gastosPorDia[dia] || 0) + item.valor;
         });
         
-        // Ordenar por data
         const diasOrdenados = Object.keys(gastosPorDia).sort();
         const valores = diasOrdenados.map(dia => gastosPorDia[dia]);
         
@@ -103,7 +108,7 @@
         dailyChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: diasOrdenados.map(dia => dia.split('/').slice(0, 2).join('/')),
+                labels: diasOrdenados,
                 datasets: [{
                     label: 'Gastos por dia (R$)',
                     data: valores,
@@ -134,6 +139,8 @@
                 }
             }
         });
+        
+        console.log('Gráfico diário renderizado com', diasOrdenados.length, 'dias');
     }
     
     document.addEventListener('DOMContentLoaded', initDailyChart);
