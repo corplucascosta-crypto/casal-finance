@@ -1,143 +1,152 @@
-// Gerenciamento de Receitas Fixas Mensais
-
-let fixedIncomes = [];
-
-// Carregar receitas fixas do localStorage
-function loadFixedIncomes() {
-    const stored = localStorage.getItem('fixedIncomes');
-    if (stored) {
-        fixedIncomes = JSON.parse(stored);
-    } else {
-        // Dados padrão
-        fixedIncomes = [
-            { id: 1, pessoa: 'LUCAS', descricao: 'Salário', valor: 5000, ativo: true },
-            { id: 2, pessoa: 'BEATRIZ', descricao: 'Salário', valor: 4500, ativo: true },
-            { id: 3, pessoa: 'CASAL', descricao: 'Rendimentos', valor: 1000, ativo: true }
-        ];
-        saveFixedIncomes();
-    }
-    renderFixedIncomes();
-}
-
-// Salvar receitas fixas
-function saveFixedIncomes() {
-    localStorage.setItem('fixedIncomes', JSON.stringify(fixedIncomes));
-}
-
-// Adicionar nova receita fixa
-function addFixedIncome(pessoa, descricao, valor) {
-    if (!descricao || !valor || valor <= 0) {
-        alert('Preencha todos os campos corretamente!');
-        return;
-    }
+// Fixed Income Module - Versão com layout moderno
+(function() {
+    if (window.fixedIncomeInitialized) return;
+    window.fixedIncomeInitialized = true;
     
-    const newId = Date.now();
-    fixedIncomes.push({
-        id: newId,
-        pessoa: pessoa,
-        descricao: descricao,
-        valor: parseFloat(valor),
-        ativo: true
-    });
+    window.fixedIncomes = [];
     
-    saveFixedIncomes();
-    renderFixedIncomes();
-    atualizarTotalReceitasFixas();
-}
-
-// Remover receita fixa
-function removeFixedIncome(id) {
-    fixedIncomes = fixedIncomes.filter(inc => inc.id !== id);
-    saveFixedIncomes();
-    renderFixedIncomes();
-    atualizarTotalReceitasFixas();
-}
-
-// Alternar ativo/inativo
-function toggleFixedIncome(id) {
-    const income = fixedIncomes.find(inc => inc.id === id);
-    if (income) {
-        income.ativo = !income.ativo;
-        saveFixedIncomes();
+    function initFixedIncome() {
+        loadFixedIncomes();
         renderFixedIncomes();
-        atualizarTotalReceitasFixas();
-    }
-}
-
-// Renderizar lista de receitas fixas
-function renderFixedIncomes() {
-    const container = document.getElementById('fixedIncomeList');
-    if (!container) return;
-    
-    if (fixedIncomes.length === 0) {
-        container.innerHTML = '<p class="no-data">Nenhuma receita fixa cadastrada.</p>';
-        return;
+        setupEvents();
     }
     
-    container.innerHTML = '';
+    function loadFixedIncomes() {
+        const stored = localStorage.getItem('fixedIncomes');
+        if (stored) {
+            window.fixedIncomes = JSON.parse(stored);
+        } else {
+            window.fixedIncomes = [
+                { id: 1, pessoa: 'LUCAS', descricao: 'Salário', valor: 5000, ativo: true },
+                { id: 2, pessoa: 'BEATRIZ', descricao: 'Salário', valor: 4500, ativo: true }
+            ];
+            saveFixedIncomes();
+        }
+    }
     
-    fixedIncomes.forEach(income => {
-        const div = document.createElement('div');
-        div.className = `fixed-income-item ${!income.ativo ? 'inactive' : ''}`;
+    function saveFixedIncomes() {
+        localStorage.setItem('fixedIncomes', JSON.stringify(window.fixedIncomes));
+        if (typeof renderForecast === 'function') renderForecast();
+    }
+    
+    function setupEvents() {
+        const addBtn = document.getElementById('addFixedIncomeBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                const pessoa = document.getElementById('fixedIncomePerson').value;
+                const descricao = document.getElementById('fixedIncomeDesc').value;
+                const valor = parseFloat(document.getElementById('fixedIncomeValue').value);
+                
+                if (!descricao || !valor || valor <= 0) {
+                    if (window.showNotification) window.showNotification('❌ Preencha todos os campos', 'error');
+                    return;
+                }
+                
+                window.fixedIncomes.push({
+                    id: Date.now(),
+                    pessoa: pessoa,
+                    descricao: descricao,
+                    valor: valor,
+                    ativo: true
+                });
+                
+                saveFixedIncomes();
+                renderFixedIncomes();
+                
+                document.getElementById('fixedIncomeDesc').value = '';
+                document.getElementById('fixedIncomeValue').value = '';
+                
+                if (window.showNotification) window.showNotification('✅ Receita fixa adicionada!', 'success');
+            });
+        }
+    }
+    
+    window.renderFixedIncomes = function() {
+        const container = document.getElementById('fixedIncomeList');
+        if (!container) return;
         
-        div.innerHTML = `
-            <div class="income-info">
-                <span class="income-person">${getEmoji(income.pessoa)} ${income.pessoa}</span>
-                <span class="income-desc">${income.descricao}</span>
-                <span class="income-value">R$ ${income.valor.toFixed(2)}</span>
-            </div>
-            <div class="income-actions">
-                <button onclick="toggleFixedIncome(${income.id})" class="toggle-btn">
-                    ${income.ativo ? '✅' : '⭕'}
-                </button>
-                <button onclick="removeFixedIncome(${income.id})" class="remove-btn">🗑️</button>
+        if (window.fixedIncomes.length === 0) {
+            container.innerHTML = '<p class="no-data">Nenhuma receita fixa cadastrada.</p>';
+            return;
+        }
+        
+        // Separar por pessoa
+        const lucasIncomes = window.fixedIncomes.filter(inc => inc.pessoa === 'LUCAS');
+        const beatrizIncomes = window.fixedIncomes.filter(inc => inc.pessoa === 'BEATRIZ');
+        
+        container.innerHTML = `
+            <div class="fixed-income-grid">
+                <div class="fixed-income-column">
+                    <div class="column-header lucas">👨 LUCAS</div>
+                    <div class="column-items">
+                        ${lucasIncomes.map(inc => `
+                            <div class="income-card ${!inc.ativo ? 'inactive' : ''}">
+                                <div class="income-info">
+                                    <span class="income-emoji">💰</span>
+                                    <div class="income-details">
+                                        <span class="income-desc">${inc.descricao}</span>
+                                        <span class="income-value">R$ ${inc.valor.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div class="income-actions">
+                                    <button class="toggle-income" data-id="${inc.id}">${inc.ativo ? '✅' : '⭕'}</button>
+                                    <button class="delete-income" data-id="${inc.id}">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${lucasIncomes.length === 0 ? '<p class="empty-message">Nenhuma receita cadastrada</p>' : ''}
+                    </div>
+                </div>
+                <div class="fixed-income-column">
+                    <div class="column-header beatriz">👩 BEATRIZ</div>
+                    <div class="column-items">
+                        ${beatrizIncomes.map(inc => `
+                            <div class="income-card ${!inc.ativo ? 'inactive' : ''}">
+                                <div class="income-info">
+                                    <span class="income-emoji">💰</span>
+                                    <div class="income-details">
+                                        <span class="income-desc">${inc.descricao}</span>
+                                        <span class="income-value">R$ ${inc.valor.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div class="income-actions">
+                                    <button class="toggle-income" data-id="${inc.id}">${inc.ativo ? '✅' : '⭕'}</button>
+                                    <button class="delete-income" data-id="${inc.id}">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${beatrizIncomes.length === 0 ? '<p class="empty-message">Nenhuma receita cadastrada</p>' : ''}
+                    </div>
+                </div>
             </div>
         `;
         
-        container.appendChild(div);
-    });
-}
-
-function getEmoji(pessoa) {
-    if (pessoa === 'LUCAS') return '👨';
-    if (pessoa === 'BEATRIZ') return '👩';
-    return '💑';
-}
-
-function atualizarTotalReceitasFixas() {
-    const totalAtivo = fixedIncomes
-        .filter(inc => inc.ativo)
-        .reduce((sum, inc) => sum + inc.valor, 0);
-    
-    // Atualizar o card de receitas (será somado com receitas do CSV)
-    const totalIncomeElement = document.getElementById('totalIncome');
-    if (totalIncomeElement && typeof totalReceitasVariaveis !== 'undefined') {
-        const totalFinal = totalAtivo + totalReceitasVariaveis;
-        totalIncomeElement.innerHTML = `R$ ${totalFinal.toFixed(2)}`;
-        
-        // Atualizar saldo
-        const totalExpenseElement = document.getElementById('totalExpense');
-        const totalBalanceElement = document.getElementById('totalBalance');
-        if (totalExpenseElement && totalBalanceElement) {
-            const despesas = parseFloat(totalExpenseElement.innerHTML.replace('R$ ', '').replace(',', '.')) || 0;
-            totalBalanceElement.innerHTML = `R$ ${(totalFinal - despesas).toFixed(2)}`;
-        }
-    }
-}
-
-// Configurar eventos do módulo
-document.addEventListener('DOMContentLoaded', () => {
-    const addBtn = document.getElementById('addFixedIncomeBtn');
-    if (addBtn) {
-        addBtn.addEventListener('click', () => {
-            const pessoa = document.getElementById('fixedIncomePerson').value;
-            const descricao = document.getElementById('fixedIncomeDesc').value;
-            const valor = document.getElementById('fixedIncomeValue').value;
-            addFixedIncome(pessoa, descricao, valor);
-            
-            // Limpar campos
-            document.getElementById('fixedIncomeDesc').value = '';
-            document.getElementById('fixedIncomeValue').value = '';
+        // Eventos dos botões
+        document.querySelectorAll('.toggle-income').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = parseInt(btn.dataset.id);
+                const income = window.fixedIncomes.find(i => i.id === id);
+                if (income) {
+                    income.ativo = !income.ativo;
+                    saveFixedIncomes();
+                    renderFixedIncomes();
+                    if (window.showNotification) window.showNotification(income.ativo ? '✅ Receita ativada' : '⭕ Receita desativada', 'info');
+                }
+            });
         });
-    }
-});
+        
+        document.querySelectorAll('.delete-income').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = parseInt(btn.dataset.id);
+                window.fixedIncomes = window.fixedIncomes.filter(i => i.id !== id);
+                saveFixedIncomes();
+                renderFixedIncomes();
+                if (window.showNotification) window.showNotification('🗑️ Receita removida', 'info');
+            });
+        });
+    };
+    
+    window.loadFixedIncomes = loadFixedIncomes;
+    
+    document.addEventListener('DOMContentLoaded', initFixedIncome);
+})();

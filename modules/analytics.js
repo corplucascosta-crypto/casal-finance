@@ -1,6 +1,5 @@
 let weeklyChart = null;
 let paymentChart = null;
-let personAnalyticsChart = null;
 
 function renderAnalytics() {
     if (!window.filteredData || window.filteredData.length === 0) {
@@ -15,22 +14,17 @@ function renderAnalytics() {
     // 1. Gastos por dia da semana
     const weekDays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const gastosPorDia = new Array(7).fill(0);
-    const qtdPorDia = new Array(7).fill(0);
     
     despesas.forEach(item => {
-        let data;
-        if (item.dataISO) {
-            data = new Date(item.dataISO);
-        } else if (item.dataRaw) {
-            const partes = item.dataRaw.split('/');
+        let dataStr = item.dataRaw || item.data;
+        if (dataStr && dataStr.includes('/')) {
+            const partes = dataStr.split('/');
             if (partes.length >= 3) {
-                data = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+                const data = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+                if (!isNaN(data.getDay())) {
+                    gastosPorDia[data.getDay()] += item.valor;
+                }
             }
-        }
-        if (data && !isNaN(data.getDay())) {
-            const diaSemana = data.getDay();
-            gastosPorDia[diaSemana] += item.valor;
-            qtdPorDia[diaSemana]++;
         }
     });
     
@@ -84,10 +78,8 @@ function renderAnalytics() {
         });
     }
     
-    console.log('Análises renderizadas com', despesas.length, 'despesas');
+    console.log('Análises renderizadas');
 }
 
 document.addEventListener('dadosCarregados', renderAnalytics);
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(renderAnalytics, 500);
-});
+document.addEventListener('DOMContentLoaded', () => setTimeout(renderAnalytics, 500));

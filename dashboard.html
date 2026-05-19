@@ -22,7 +22,6 @@
             <li class="menu-item active" data-module="dashboard">
                 <span>📊</span> Dashboard
             </li>
-            <li class="menu-item" data-module="budgets">
                 <span>🎯</span> Metas
             </li>
             <li class="menu-item" data-module="comparison">
@@ -169,7 +168,6 @@
         </div>
 
         <!-- MÓDULO: METAS -->
-        <div id="budgetsModule" class="module">
                 <h2 class="section-title">🎯 Metas e Orçamentos</h2>
                 <div class="budget-controls">
                     <select id="budgetCategorySelect">
@@ -217,7 +215,7 @@
                         <div class="person-stats">
                             <div class="stat">
                                 <span class="stat-label">Total gasto</span>
-                                <span class="stat-value" id="lucasGasto">R$ 0,00</span>
+                                <span class="stat-value" id="lucasTotal">R$ 0,00</span>
                             </div>
                             <div class="stat">
                                 <span class="stat-label">Média diária</span>
@@ -234,7 +232,7 @@
                         <div class="person-stats">
                             <div class="stat">
                                 <span class="stat-label">Total gasto</span>
-                                <span class="stat-value" id="beatrizGasto">R$ 0,00</span>
+                                <span class="stat-value" id="beatrizTotal">R$ 0,00</span>
                             </div>
                             <div class="stat">
                                 <span class="stat-label">Média diária</span>
@@ -250,7 +248,7 @@
                 <div class="comparison-ranking">
                     <div class="ranking-card">
                         <h4>🏆 Ranking de Economia</h4>
-                        <div id="rankingList" class="ranking-list"></div>
+                        <div id="rankingListModern" class="ranking-list"></div>
                     </div>
                     <div class="chart-person-container">
                         <canvas id="personComparisonChart" width="400" height="200"></canvas>

@@ -1444,3 +1444,122 @@ canvas {
 .daily-chart-container {
     margin-top: 20px;
 }
+/* ========== RECEITAS FIXAS - LAYOUT MODERNO ========== */
+.fixed-income-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.fixed-income-column {
+    background: #f8fafc;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.column-header {
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.column-header.lucas { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.column-header.beatriz { background: linear-gradient(135deg, #ec489a, #db2777); }
+
+.column-items {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.income-card {
+    background: white;
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.income-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.income-card.inactive { opacity: 0.5; background: #f1f5f9; }
+
+.income-info { display: flex; align-items: center; gap: 12px; }
+.income-emoji { font-size: 1.5rem; }
+.income-details { display: flex; flex-direction: column; }
+.income-desc { font-weight: 600; color: #1e293b; }
+.income-value { font-size: 0.85rem; color: #10b981; font-weight: 600; }
+
+.income-actions { display: flex; gap: 8px; }
+.income-actions button { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+
+.empty-message { text-align: center; color: #94a3b8; padding: 20px; }
+
+/* ========== PERSON DASHBOARD MODERNO ========== */
+.person-cards-modern {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.person-card-modern {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.person-card-modern:hover { transform: translateY(-4px); }
+
+.person-header-modern {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.person-avatar { font-size: 2.5rem; }
+.person-name { font-size: 1.3rem; font-weight: 700; }
+
+.person-stats-modern {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.stat-modern {
+    text-align: center;
+}
+
+.stat-modern .stat-label { font-size: 0.7rem; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
+.stat-modern .stat-value { font-size: 1.1rem; font-weight: 700; }
+.stat-modern .stat-sub { font-size: 0.7rem; color: #94a3b8; margin-top: 4px; }
+
+.ranking-modern {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.ranking-winner { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.winner-icon { font-size: 2rem; }
+.winner-name { font-size: 1.2rem; font-weight: 700; color: #92400e; }
+.winner-desc { font-size: 0.85rem; color: #b45309; }
+
+.stat-bar { margin-bottom: 16px; }
+.stat-label { font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; }
+.stat-bar-bg { background: #e2e8f0; border-radius: 10px; height: 24px; overflow: hidden; }
+.stat-bar-fill { height: 100%; border-radius: 10px; transition: width 0.3s; }
+.stat-value { font-size: 0.75rem; color: #64748b; margin-top: 4px; text-align: right; }
+
+@media (max-width: 768px) {
+    .fixed-income-grid, .person-cards-modern { grid-template-columns: 1fr; }
+}
