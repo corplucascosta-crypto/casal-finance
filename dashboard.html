@@ -3,106 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Financeiro do Casal - Dashboard</title>
+    <title>FinanciFlow - Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
+    <!-- Menu Hambúrguer -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <div class="logo-icon">💰</div>
+            <h3>FinanciFlow</h3>
+            <button class="close-menu" id="closeMenu">✕</button>
+        </div>
+        <ul class="menu-items">
+            <li class="menu-item active" data-module="dashboard">
+                <span>📊</span> Dashboard
+            </li>
+            <li class="menu-item" data-module="fixedIncome">
+                <span>📋</span> Receitas Fixas
+            </li>
+            <li class="menu-item" data-module="transactions">
+                <span>💳</span> Lançamentos
+            </li>
+            <li class="menu-item" data-module="analytics">
+                <span>📈</span> Análises
+            </li>
+        </ul>
+        <div class="menu-footer">
+            <div class="user-info-side">
+                <span id="userNameSide"></span>
+            </div>
+            <button id="logoutBtnSide" class="logout-btn">🚪 Sair</button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <!-- Header -->
         <header>
             <div class="header-top">
-                <h1>💑 Financeiro do Casal</h1>
+                <button class="hamburger-btn" id="hamburgerBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="logo">
+                    <span class="logo-icon-small">💰</span>
+                    <h2>FinanciFlow</h2>
+                </div>
                 <div class="user-info">
                     <span id="userNameDisplay"></span>
-                    <button id="logoutBtn" class="logout-btn">🚪 Sair</button>
                 </div>
             </div>
-            <p>Atualizado automaticamente • Dados do Google Sheets</p>
+            <p class="subtitle">Atualizado automaticamente • Dados do Google Sheets</p>
             <div class="last-update" id="lastUpdate"></div>
         </header>
 
-        <!-- Resumo rápido -->
-        <section class="cards">
-            <div class="card income">
-                <h3>💰 Receitas</h3>
-                <p id="totalIncome">R$ 0,00</p>
-            </div>
-            <div class="card expense">
-                <h3>💸 Despesas</h3>
-                <p id="totalExpense">R$ 0,00</p>
-            </div>
-            <div class="card balance">
-                <h3>⚖️ Saldo</h3>
-                <p id="totalBalance">R$ 0,00</p>
-            </div>
-        </section>
+        <!-- Módulo Dashboard (visível por padrão) -->
+        <div id="dashboardModule" class="module active">
+            <!-- Cards de Despesas Apenas -->
+            <section class="cards">
+                <div class="card expense-card">
+                    <div class="card-icon">💸</div>
+                    <div class="card-content">
+                        <h3>Total de Despesas</h3>
+                        <p id="totalExpense">R$ 0,00</p>
+                        <span class="card-trend">Este mês</span>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Módulo de Receitas Fixas -->
-        <section class="fixed-income-section">
-            <h2>📋 Receitas Fixas Mensais</h2>
-            <div class="fixed-income-controls">
-                <select id="fixedIncomePerson">
-                    <option value="LUCAS">LUCAS</option>
-                    <option value="BEATRIZ">BEATRIZ</option>
-                    <option value="CASAL">CASAL</option>
-                </select>
-                <input type="text" id="fixedIncomeDesc" placeholder="Descrição (ex: Salário)">
-                <input type="number" id="fixedIncomeValue" placeholder="Valor (R$)" step="0.01">
-                <button id="addFixedIncomeBtn">➕ Adicionar Receita Fixa</button>
-            </div>
-            <div id="fixedIncomeList" class="fixed-income-list"></div>
-        </section>
+            <!-- Cards de Insights -->
+            <section class="insights">
+                <h2 class="section-title">📊 Insights</h2>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <div class="insight-icon">📅</div>
+                        <div class="insight-content">
+                            <h4>Dia com mais gastos</h4>
+                            <p id="topDay">Carregando...</p>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">💳</div>
+                        <div class="insight-content">
+                            <h4>Pagamento mais usado</h4>
+                            <p id="topPayment">Carregando...</p>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">👤</div>
+                        <div class="insight-content">
+                            <h4>Quem mais gastou</h4>
+                            <p id="topSpender">Carregando...</p>
+                        </div>
+                    </div>
+                    <div class="insight-card">
+                        <div class="insight-icon">🏷️</div>
+                        <div class="insight-content">
+                            <h4>Categoria mais cara</h4>
+                            <p id="topCategory">Carregando...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Filtros -->
-        <section class="filters">
-            <h2>🔍 Filtros</h2>
-            <div class="filter-group">
-                <select id="filterPerson">
-                    <option value="all">Todos</option>
-                    <option value="LUCAS">LUCAS</option>
-                    <option value="BEATRIZ">BEATRIZ</option>
-                    <option value="CASAL">CASAL</option>
-                </select>
-                <select id="filterType">
-                    <option value="all">Todos os tipos</option>
-                    <option value="Despesa">Despesa</option>
-                    <option value="Receita">Receita</option>
-                </select>
-                <select id="filterCategory">
-                    <option value="all">Todas as categorias</option>
-                </select>
-                <input type="text" id="searchDescription" placeholder="Buscar descrição...">
-                <button id="resetFilters">Resetar Filtros</button>
-            </div>
-        </section>
+            <!-- Gráfico -->
+            <section class="chart-container">
+                <h2 class="section-title">📈 Despesas por Categoria</h2>
+                <canvas id="expenseChart" width="400" height="200"></canvas>
+            </section>
+        </div>
 
-        <!-- Gráfico -->
-        <section class="chart-container">
-            <canvas id="expenseChart" width="400" height="200"></canvas>
-        </section>
+        <!-- Módulo Receitas Fixas -->
+        <div id="fixedIncomeModule" class="module">
+            <section class="fixed-income-section">
+                <h2 class="section-title">📋 Receitas Fixas Mensais</h2>
+                <div class="fixed-income-controls">
+                    <select id="fixedIncomePerson">
+                        <option value="LUCAS">LUCAS</option>
+                        <option value="BEATRIZ">BEATRIZ</option>
+                    </select>
+                    <input type="text" id="fixedIncomeDesc" placeholder="Descrição (ex: Salário)">
+                    <input type="number" id="fixedIncomeValue" placeholder="Valor (R$)" step="0.01">
+                    <button id="addFixedIncomeBtn">➕ Adicionar</button>
+                </div>
+                <div id="fixedIncomeList" class="fixed-income-list"></div>
+            </section>
+        </div>
 
-        <!-- Tabela de lançamentos -->
-        <section class="transactions">
-            <h2>📋 Lançamentos</h2>
-            <div class="table-wrapper">
-                <table id="transactionsTable">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Valor</th>
-                            <th>Tipo</th>
-                            <th>Categoria</th>
-                            <th>Quem</th>
-                            <th>Pagamento</th>
-                            <th>Descrição</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr><td colspan="7">Carregando dados...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        <!-- Módulo Lançamentos -->
+        <div id="transactionsModule" class="module">
+            <!-- Filtros -->
+            <section class="filters">
+                <h2 class="section-title">🔍 Filtros</h2>
+                <div class="filter-group">
+                    <select id="filterPerson">
+                        <option value="all">Todos</option>
+                        <option value="LUCAS">LUCAS</option>
+                        <option value="BEATRIZ">BEATRIZ</option>
+                    </select>
+                    <select id="filterType">
+                        <option value="all">Todos os tipos</option>
+                        <option value="Despesa">Despesa</option>
+                        <option value="Receita">Receita</option>
+                    </select>
+                    <select id="filterCategory">
+                        <option value="all">Todas as categorias</option>
+                    </select>
+                    <input type="text" id="searchDescription" placeholder="Buscar descrição...">
+                    <button id="resetFilters">Resetar</button>
+                </div>
+            </section>
+
+            <!-- Tabela -->
+            <section class="transactions">
+                <h2 class="section-title">📋 Lançamentos</h2>
+                <div class="table-wrapper">
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Tipo</th>
+                                <th>Categoria</th>
+                                <th>Quem</th>
+                                <th>Pagamento</th>
+                                <th>Descrição</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr><td colspan="7">Carregando dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- Módulo Análises -->
+        <div id="analyticsModule" class="module">
+            <section class="analytics-section">
+                <h2 class="section-title">📊 Análises Detalhadas</h2>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>📅 Gastos por dia da semana</h3>
+                        <canvas id="weeklyChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>👥 Gastos por pessoa</h3>
+                        <canvas id="personChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>💳 Gastos por método de pagamento</h3>
+                        <canvas id="paymentChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 
     <script src="modules/auth.js"></script>
@@ -111,6 +209,8 @@
     <script src="modules/dashboard.js"></script>
     <script src="modules/filters.js"></script>
     <script src="modules/table.js"></script>
+    <script src="modules/analytics.js"></script>
+    <script src="modules/menu.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
