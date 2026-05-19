@@ -8,15 +8,11 @@ function renderDashboard() {
         if (totalExpenseEl) totalExpenseEl.innerHTML = 'R$ 0,00';
         
         // Resetar insights
-        const topDayEl = document.getElementById('topDay');
-        const topPaymentEl = document.getElementById('topPayment');
-        const topSpenderEl = document.getElementById('topSpender');
-        const topCategoryEl = document.getElementById('topCategory');
-        
-        if (topDayEl) topDayEl.innerHTML = 'Carregando...';
-        if (topPaymentEl) topPaymentEl.innerHTML = 'Carregando...';
-        if (topSpenderEl) topSpenderEl.innerHTML = 'Carregando...';
-        if (topCategoryEl) topCategoryEl.innerHTML = 'Carregando...';
+        const insightsIds = ['topDay', 'topPayment', 'topSpender', 'topCategory'];
+        insightsIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = 'Carregando...';
+        });
         return;
     }
     
@@ -38,10 +34,8 @@ function renderDashboard() {
         // Dia com mais gastos
         const gastosPorDia = {};
         despesas.forEach(item => {
-            // Usar dataRaw se existir, ou dataISO, ou tentar extrair
-            let dia = item.dataRaw || item.dataISO || item.data;
-            if (dia && typeof dia === 'string') {
-                dia = dia.split(' ')[0]; // Pega apenas a data, sem hora
+            const dia = item.data || (item.dataRaw ? item.dataRaw.split(' ')[0] : null);
+            if (dia) {
                 gastosPorDia[dia] = (gastosPorDia[dia] || 0) + item.valor;
             }
         });
@@ -95,5 +89,4 @@ function renderDashboard() {
     console.log('Dashboard renderizado com', despesas.length, 'despesas, total:', totalExpense);
 }
 
-// Expor função globalmente
 window.renderDashboard = renderDashboard;
