@@ -3,16 +3,18 @@
     if (window.dailyChartInitialized) return;
     window.dailyChartInitialized = true;
     
-    let dailyChart = null;
+    var dailyChart = null;
     
     function initDailyChart() {
         preencherFiltrosAnoMes();
         window.renderDailyChart = renderDailyChart;
         
-        document.addEventListener('dadosCarregados', () => renderDailyChart());
+        document.addEventListener('dadosCarregados', function() {
+            renderDailyChart();
+        });
         
-        const monthSelect = document.getElementById('dailyChartMonth');
-        const yearSelect = document.getElementById('dailyChartYear');
+        var monthSelect = document.getElementById('dailyChartMonth');
+        var yearSelect = document.getElementById('dailyChartYear');
         
         if (monthSelect) monthSelect.addEventListener('change', renderDailyChart);
         if (yearSelect) yearSelect.addEventListener('change', renderDailyChart);
@@ -21,39 +23,28 @@
     }
     
     function preencherFiltrosAnoMes() {
-        const monthSelect = document.getElementById('dailyChartMonth');
-        const yearSelect = document.getElementById('dailyChartYear');
+        var monthSelect = document.getElementById('dailyChartMonth');
+        var yearSelect = document.getElementById('dailyChartYear');
         
         if (!monthSelect || !yearSelect) return;
         
-        const meses = [
-            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-        ];
+        var meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
         
         monthSelect.innerHTML = '<option value="all">Todos os meses</option>';
-        meses.forEach((mes, index) => {
-            const mesNum = String(index + 1).padStart(2, '0');
-            monthSelect.innerHTML += `<option value="${mesNum}">${mes}</option>`;
-        });
-        
-        const anos = [...new Set(window.rawData?.map(d => d.dataISO?.split('-')[0]) || [])];
-        yearSelect.innerHTML = '<option value="all">Todos os anos</option>';
-        
-        if (anos.length > 0) {
-            anos.sort().reverse().forEach(ano => {
-                yearSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
-            });
-        } else {
-            const anoAtual = new Date().getFullYear();
-            for (let ano = anoAtual; ano >= anoAtual - 2; ano--) {
-                yearSelect.innerHTML += `<option value="${ano}">${ano}</option>`;
-            }
+        for (var i = 0; i < meses.length; i++) {
+            var mesNum = String(i + 1).padStart(2, '0');
+            monthSelect.innerHTML += '<option value="' + mesNum + '">' + meses[i] + '</option>';
         }
         
-        const mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
+        var anoAtual = new Date().getFullYear();
+        yearSelect.innerHTML = '<option value="all">Todos os anos</option>';
+        for (var ano = anoAtual; ano >= anoAtual - 2; ano--) {
+            yearSelect.innerHTML += '<option value="' + ano + '">' + ano + '</option>';
+        }
+        
+        var mesAtual = String(new Date().getMonth() + 1).padStart(2, '0');
         monthSelect.value = mesAtual;
-        yearSelect.value = new Date().getFullYear();
+        yearSelect.value = anoAtual;
     }
     
     function renderDailyChart() {
@@ -62,41 +53,66 @@
             return;
         }
         
-        const month = document.getElementById('dailyChartMonth')?.value;
-        const year = document.getElementById('dailyChartYear')?.value;
+        var month = document.getElementById('dailyChartMonth')?.value;
+        var year = document.getElementById('dailyChartYear')?.value;
         
-        let despesas = window.filteredData.filter(item => item.tipo === 'Despesa');
-        
-        if (month && month !== 'all') {
-            despesas = despesas.filter(item => {
-                const data = new Date(item.dataISO);
-                return String(data.getMonth() + 1).padStart(2, '0') === month;
-            });
+        // Filtrar apenas despesas
+        var despesas = [];
+        for (var i = 0; i < window.filteredData.length; i++) {
+            if (window.filteredData[i].tipo === 'Despesa') {
+                despesas.push(window.filteredData[i]);
+            }
         }
         
-        if (year && year !== 'all') {
-            despesas = despesas.filter(item => {
-                const data = new Date(item.dataISO);
-                return data.getFullYear() === parseInt(year);
-            });
+        // Aplicar filtros
+        var despesasFiltradas = [];
+        for (var i = 0; i < despesas.length; i++) {
+            var item = despesas[i];
+            var dataStr = item.dataRaw || item.data;
+            if (!dataStr) continue;
+            
+            // Extrair data no formato DD/MM/YYYY
+            var partes = dataStr.split('/');
+            if (partes.length >= 3) {
+                var dia = partes[0];
+                var mes = partes[1].padStart(2, '0');
+                var ano = partes[2].split(' ')[0];
+                
+                if (month !== 'all' && month !== mes) continue;
+                if (year !== 'all' && year !== ano) continue;
+                
+                despesasFiltradas.push({ data: dataStr, valor: item.valor, dia: dia, mes: mes, ano: ano });
+            }
         }
         
-        const gastosPorDia = {};
-        despesas.forEach(item => {
-            const dia = item.dataRaw?.split(' ')[0] || item.dataISO?.split('T')[0];
-            gastosPorDia[dia] = (gastosPorDia[dia] || 0) + item.valor;
+        // Agrupar por dia
+        var gastosPorDia = {};
+        for (var i = 0; i < despesasFiltradas.length; i++) {
+            var item = despesasFiltradas[i];
+            var chave = item.dia + '/' + item.mes;
+            if (!gastosPorDia[chave]) gastosPorDia[chave] = 0;
+            gastosPorDia[chave] += item.valor;
+        }
+        
+        // Ordenar por dia
+        var diasOrdenados = Object.keys(gastosPorDia).sort(function(a, b) {
+            var diaA = parseInt(a.split('/')[0]);
+            var diaB = parseInt(b.split('/')[0]);
+            return diaA - diaB;
         });
         
-        const diasOrdenados = Object.keys(gastosPorDia).sort();
-        const valores = diasOrdenados.map(dia => gastosPorDia[dia]);
+        var valores = [];
+        for (var i = 0; i < diasOrdenados.length; i++) {
+            valores.push(gastosPorDia[diasOrdenados[i]]);
+        }
         
-        const ctx = document.getElementById('dailyChart');
+        var ctx = document.getElementById('dailyChart');
         if (!ctx) return;
         
         if (dailyChart) dailyChart.destroy();
         
         if (diasOrdenados.length === 0) {
-            const context = ctx.getContext('2d');
+            var context = ctx.getContext('2d');
             context.clearRect(0, 0, ctx.width, ctx.height);
             context.fillStyle = '#94a3b8';
             context.font = '14px Inter';
@@ -125,7 +141,9 @@
                     legend: { position: 'top' },
                     tooltip: {
                         callbacks: {
-                            label: (context) => `R$ ${context.raw.toFixed(2)}`
+                            label: function(context) {
+                                return 'R$ ' + context.raw.toFixed(2);
+                            }
                         }
                     }
                 },
@@ -133,7 +151,9 @@
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            callback: (value) => `R$ ${value.toFixed(2)}`
+                            callback: function(value) {
+                                return 'R$ ' + value.toFixed(2);
+                            }
                         }
                     }
                 }
