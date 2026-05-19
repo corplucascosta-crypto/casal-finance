@@ -1417,3 +1417,30 @@ canvas {
         grid-template-columns: 1fr;
     }
 }
+/* ========== GRÁFICO DE GASTOS POR DIA ========== */
+.daily-chart-section {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.daily-chart-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.daily-chart-controls select {
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    font-size: 0.9rem;
+}
+
+.daily-chart-container {
+    margin-top: 20px;
+}

@@ -10,13 +10,11 @@ function initMenu() {
     
     if (!hamburgerBtn) return;
     
-    // Abrir menu
     hamburgerBtn.addEventListener('click', () => {
         sideMenu.classList.add('open');
         menuOverlay.classList.add('open');
     });
     
-    // Fechar menu
     const closeMenuFunction = () => {
         sideMenu.classList.remove('open');
         menuOverlay.classList.remove('open');
@@ -25,7 +23,6 @@ function initMenu() {
     if (closeMenu) closeMenu.addEventListener('click', closeMenuFunction);
     if (menuOverlay) menuOverlay.addEventListener('click', closeMenuFunction);
     
-    // Trocar módulo
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
             const module = item.dataset.module;
@@ -38,12 +35,26 @@ function initMenu() {
 function switchModule(module) {
     currentModule = module;
     
-    // Atualizar classes dos módulos
+    // Mapeamento de IDs dos módulos
+    const moduleMap = {
+        'dashboard': 'dashboardModule',
+        'budgets': 'budgetsModule',
+        'comparison': 'comparisonModule',
+        'persons': 'personsModule',
+        'fixedIncome': 'fixedIncomeModule',
+        'transactions': 'transactionsModule',
+        'analytics': 'analyticsModule'
+    };
+    
+    const moduleId = moduleMap[module];
+    
+    // Esconder todos os módulos
     document.querySelectorAll('.module').forEach(mod => {
         mod.classList.remove('active');
     });
     
-    const moduleElement = document.getElementById(`${module}Module`);
+    // Mostrar módulo selecionado
+    const moduleElement = document.getElementById(moduleId);
     if (moduleElement) {
         moduleElement.classList.add('active');
     }
@@ -57,8 +68,22 @@ function switchModule(module) {
     });
     
     // Recarregar gráficos específicos se necessário
-    if (module === 'analytics') {
-        renderAnalytics();
+    if (module === 'analytics' && typeof renderAnalytics === 'function') {
+        setTimeout(renderAnalytics, 100);
+    }
+    if (module === 'comparison' && typeof renderComparison === 'function') {
+        setTimeout(renderComparison, 100);
+    }
+    if (module === 'persons' && typeof renderPersonDashboard === 'function') {
+        setTimeout(renderPersonDashboard, 100);
+    }
+    if (module === 'budgets' && typeof renderBudgets === 'function') {
+        setTimeout(renderBudgets, 100);
+    }
+    if (module === 'dashboard') {
+        setTimeout(() => {
+            if (typeof renderDailyChart === 'function') renderDailyChart();
+        }, 100);
     }
 }
 

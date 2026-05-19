@@ -179,3 +179,7 @@
     
     document.addEventListener('DOMContentLoaded', initPersonDashboard);
 })();
+
+// Expor função global
+window.renderPersonDashboard = renderPersonDashboard;
+

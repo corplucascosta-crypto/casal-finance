@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>FinanciFlow - Dashboard</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -21,6 +21,15 @@
         <ul class="menu-items">
             <li class="menu-item active" data-module="dashboard">
                 <span>📊</span> Dashboard
+            </li>
+            <li class="menu-item" data-module="budgets">
+                <span>🎯</span> Metas
+            </li>
+            <li class="menu-item" data-module="comparison">
+                <span>📈</span> Comparativo
+            </li>
+            <li class="menu-item" data-module="persons">
+                <span>👥</span> Pessoas
             </li>
             <li class="menu-item" data-module="fixedIncome">
                 <span>📋</span> Receitas Fixas
@@ -70,11 +79,13 @@
                     <h4>Dica do Dia</h4>
                     <p id="dailyTip">Carregando dica...</p>
                 </div>
+                <button class="tip-refresh" id="newTipBtn">🔄 Nova Dica</button>
             </div>
         </div>
 
-        <!-- Módulo Dashboard -->
+        <!-- MÓDULO: DASHBOARD -->
         <div id="dashboardModule" class="module active">
+            <!-- Total de Despesas -->
             <section class="cards">
                 <div class="card expense-card">
                     <div class="card-icon">💸</div>
@@ -86,6 +97,7 @@
                 </div>
             </section>
 
+            <!-- Insights -->
             <section class="insights">
                 <h2 class="section-title">📊 Insights</h2>
                 <div class="insights-grid">
@@ -120,13 +132,140 @@
                 </div>
             </section>
 
-            <section class="chart-container">
-                <h2 class="section-title">📈 Despesas por Categoria</h2>
-                <canvas id="expenseChart" width="400" height="200"></canvas>
+            <!-- Previsão do Mês -->
+            <section class="forecast-section">
+                <h2 class="section-title">📈 Previsão do Mês</h2>
+                <div class="forecast-cards">
+                    <div class="forecast-card">
+                        <h4>📊 Média diária</h4>
+                        <p id="mediaDiaria">R$ 0,00</p>
+                    </div>
+                    <div class="forecast-card">
+                        <h4>📅 Projeção mensal</h4>
+                        <p id="projecaoMensal">R$ 0,00</p>
+                    </div>
+                    <div class="forecast-card">
+                        <h4>💰 Orçamento restante</h4>
+                        <p id="orcamentoRestante">R$ 0,00</p>
+                    </div>
+                    <div class="forecast-card">
+                        <h4>📌 Por dia (restante)</h4>
+                        <p id="orcamentoPorDia">R$ 0,00</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráfico de Gastos por Dia com Filtro -->
+            <section class="daily-chart-section">
+                <h2 class="section-title">📅 Gastos por Dia</h2>
+                <div class="daily-chart-controls">
+                    <select id="dailyChartMonth">
+                        <option value="">Selecione o mês</option>
+                    </select>
+                    <select id="dailyChartYear">
+                        <option value="">Selecione o ano</option>
+                    </select>
+                </div>
+                <div class="daily-chart-container">
+                    <canvas id="dailyChart" width="400" height="200"></canvas>
+                </div>
             </section>
         </div>
 
-        <!-- Módulo Receitas Fixas -->
+        <!-- MÓDULO: METAS -->
+        <div id="budgetsModule" class="module">
+            <section class="budgets-section">
+                <h2 class="section-title">🎯 Metas e Orçamentos</h2>
+                <div class="budget-controls">
+                    <select id="budgetCategorySelect">
+                        <option value="">Selecione a categoria</option>
+                    </select>
+                    <input type="number" id="budgetLimitInput" placeholder="Limite (R$)" step="0.01">
+                    <input type="color" id="budgetColorInput" value="#ef4444">
+                    <button id="addBudgetBtn">➕ Adicionar Meta</button>
+                </div>
+                <div id="budgetsList" class="budgets-list"></div>
+            </section>
+        </div>
+
+        <!-- MÓDULO: COMPARATIVO -->
+        <div id="comparisonModule" class="module">
+            <section class="comparison-section">
+                <h2 class="section-title">📊 Comparativo Mensal</h2>
+                <div class="comparison-cards">
+                    <div class="comparison-card">
+                        <h4>📉 Variação mensal</h4>
+                        <p id="variacaoMensal">0%</p>
+                        <small id="variacaoTrend"></small>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>🏆 Melhor mês</h4>
+                        <p id="melhorMes">-</p>
+                    </div>
+                    <div class="comparison-card">
+                        <h4>⚠️ Pior mês</h4>
+                        <p id="piorMes">-</p>
+                    </div>
+                </div>
+                <div class="chart-comparison-container">
+                    <canvas id="comparisonChart" width="400" height="200"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- MÓDULO: PESSOAS -->
+        <div id="personsModule" class="module">
+            <section class="person-dashboard-section">
+                <h2 class="section-title">👥 Dashboard por Pessoa</h2>
+                <div class="person-cards">
+                    <div class="person-card lucas">
+                        <div class="person-header">👨 LUCAS</div>
+                        <div class="person-stats">
+                            <div class="stat">
+                                <span class="stat-label">Total gasto</span>
+                                <span class="stat-value" id="lucasGasto">R$ 0,00</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Média diária</span>
+                                <span class="stat-value" id="lucasMedia">R$ 0,00</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Maior gasto</span>
+                                <span class="stat-value" id="lucasMaior">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="person-card beatriz">
+                        <div class="person-header">👩 BEATRIZ</div>
+                        <div class="person-stats">
+                            <div class="stat">
+                                <span class="stat-label">Total gasto</span>
+                                <span class="stat-value" id="beatrizGasto">R$ 0,00</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Média diária</span>
+                                <span class="stat-value" id="beatrizMedia">R$ 0,00</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Maior gasto</span>
+                                <span class="stat-value" id="beatrizMaior">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="comparison-ranking">
+                    <div class="ranking-card">
+                        <h4>🏆 Ranking de Economia</h4>
+                        <div id="rankingList" class="ranking-list"></div>
+                    </div>
+                    <div class="chart-person-container">
+                        <canvas id="personComparisonChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- MÓDULO: RECEITAS FIXAS -->
         <div id="fixedIncomeModule" class="module">
             <section class="fixed-income-section">
                 <h2 class="section-title">📋 Receitas Fixas Mensais</h2>
@@ -143,9 +282,8 @@
             </section>
         </div>
 
-        <!-- Módulo Lançamentos -->
+        <!-- MÓDULO: LANÇAMENTOS -->
         <div id="transactionsModule" class="module">
-            <!-- Controles de atualização e exportação -->
             <div class="controls-bar">
                 <div class="refresh-control">
                     <div class="refresh-buttons">
@@ -162,7 +300,6 @@
                 </div>
             </div>
 
-            <!-- Filtros -->
             <section class="filters">
                 <h2 class="section-title">🔍 Filtros</h2>
                 <div class="filter-group">
@@ -182,9 +319,11 @@
                     <input type="text" id="searchDescription" placeholder="Buscar descrição...">
                     <button id="resetFilters">Resetar</button>
                 </div>
+                <div class="categories-btn-container">
+                    <button id="manageCategoriesBtn" class="manage-categories-btn">🏷️ Gerenciar Categorias</button>
+                </div>
             </section>
 
-            <!-- Filtros Avançados -->
             <div class="enhanced-filters">
                 <div class="date-filters">
                     <input type="date" id="startDate" placeholder="Data inicial">
@@ -220,7 +359,6 @@
                 </div>
             </div>
 
-            <!-- Tabela -->
             <section class="transactions">
                 <h2 class="section-title">📋 Lançamentos</h2>
                 <div class="table-wrapper">
@@ -244,7 +382,7 @@
             </section>
         </div>
 
-        <!-- Módulo Análises -->
+        <!-- MÓDULO: ANÁLISES -->
         <div id="analyticsModule" class="module">
             <section class="analytics-section">
                 <h2 class="section-title">📊 Análises Detalhadas</h2>
@@ -266,7 +404,26 @@
         </div>
     </div>
 
-    <!-- Scripts em ordem correta -->
+    <!-- Modal de Categorias -->
+    <div id="categoriesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏷️ Gerenciar Categorias</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="add-category-form">
+                    <input type="text" id="newCatNome" placeholder="Nome da categoria">
+                    <input type="color" id="newCatCor" value="#ef4444">
+                    <input type="text" id="newCatIcone" placeholder="Emoji (ex: 🍔)" maxlength="2">
+                    <button id="addCategoryBtn">➕ Adicionar</button>
+                </div>
+                <div id="categoriesList" class="categories-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="modules/auth.js"></script>
     <script src="modules/fixedIncome.js"></script>
     <script src="modules/dataLoader.js"></script>
@@ -279,11 +436,12 @@
     <script src="modules/export.js"></script>
     <script src="modules/filtersEnhanced.js"></script>
     <script src="modules/notifications.js"></script>
-    <script src="script.js"></script>
     <script src="modules/budget.js"></script>
     <script src="modules/forecast.js"></script>
     <script src="modules/comparison.js"></script>
     <script src="modules/categories.js"></script>
     <script src="modules/personDashboard.js"></script>
+    <script src="modules/dailyChart.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
