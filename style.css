@@ -614,3 +614,152 @@ canvas {
     font-weight: 500;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
+
+/* ========== AUTO REFRESH ========== */
+.refresh-control {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.refresh-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.refresh-btn, .auto-refresh-btn {
+    padding: 8px 16px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.refresh-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+.auto-refresh-btn {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.auto-refresh-btn.active {
+    background: #10b981;
+    color: white;
+}
+
+.refresh-status {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* ========== EXPORT ========== */
+.export-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.export-btn {
+    padding: 8px 16px;
+    border-radius: 40px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.export-btn.csv {
+    background: #10b981;
+    color: white;
+}
+
+.export-btn.pdf {
+    background: #ef4444;
+    color: white;
+}
+
+/* ========== FILTROS AVANÇADOS ========== */
+.enhanced-filters {
+    margin: 16px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 16px;
+}
+
+.date-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.date-filters input,
+.date-filters select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+}
+
+.filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.apply-filters, .save-filter {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.apply-filters {
+    background: #8b5cf6;
+    color: white;
+}
+
+.save-filter {
+    background: #f59e0b;
+    color: white;
+}
+
+.load-filter {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+@media (max-width: 768px) {
+    .refresh-control {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .date-filters {
+        flex-direction: column;
+    }
+}
