@@ -1,4 +1,4 @@
-// Person Dashboard Module - Layout Moderno
+// Person Dashboard Module - Layout Moderno e Compacto
 (function() {
     if (window.personDashboardInitialized) return;
     window.personDashboardInitialized = true;
@@ -6,75 +6,109 @@
     let personComparisonChart = null;
     
     function initPersonDashboard() {
-        document.addEventListener('dadosCarregados', () => window.renderPersonDashboard());
+        document.addEventListener('dadosCarregados', function() {
+            window.renderPersonDashboard();
+        });
         window.renderPersonDashboard();
     }
     
     window.renderPersonDashboard = function() {
-        if (!window.filteredData || window.filteredData.length === 0) return;
+        console.log('Renderizando Person Dashboard...');
         
-        const despesas = window.filteredData.filter(item => item.tipo === 'Despesa');
+        if (!window.filteredData || window.filteredData.length === 0) {
+            return;
+        }
+        
+        var despesas = window.filteredData.filter(function(item) {
+            return item.tipo === 'Despesa';
+        });
         
         // Calcular totais por pessoa
-        const lucasTotal = despesas.filter(d => d.quem === 'LUCAS').reduce((s, d) => s + d.valor, 0);
-        const beatrizTotal = despesas.filter(d => d.quem === 'BEATRIZ').reduce((s, d) => s + d.valor, 0);
+        var lucasTotal = 0;
+        var beatrizTotal = 0;
+        var lucasGastosLista = [];
+        var beatrizGastosLista = [];
+        var lucasDias = new Set();
+        var beatrizDias = new Set();
         
-        // Calcular médias e maiores gastos
-        const lucasGastos = despesas.filter(d => d.quem === 'LUCAS').map(d => d.valor);
-        const beatrizGastos = despesas.filter(d => d.quem === 'BEATRIZ').map(d => d.valor);
+        despesas.forEach(function(item) {
+            if (item.quem === 'LUCAS') {
+                lucasTotal += item.valor;
+                lucasGastosLista.push(item.valor);
+                if (item.data) lucasDias.add(item.data);
+                if (item.dataRaw) lucasDias.add(item.dataRaw.split(' ')[0]);
+            }
+            if (item.quem === 'BEATRIZ') {
+                beatrizTotal += item.valor;
+                beatrizGastosLista.push(item.valor);
+                if (item.data) beatrizDias.add(item.data);
+                if (item.dataRaw) beatrizDias.add(item.dataRaw.split(' ')[0]);
+            }
+        });
         
-        const lucasMedia = lucasGastos.length > 0 ? lucasTotal / lucasGastos.length : 0;
-        const beatrizMedia = beatrizGastos.length > 0 ? beatrizTotal / beatrizGastos.length : 0;
+        var lucasMedia = lucasDias.size > 0 ? lucasTotal / lucasDias.size : 0;
+        var beatrizMedia = beatrizDias.size > 0 ? beatrizTotal / beatrizDias.size : 0;
         
-        const lucasMaior = lucasGastos.length > 0 ? Math.max(...lucasGastos) : 0;
-        const beatrizMaior = beatrizGastos.length > 0 ? Math.max(...beatrizGastos) : 0;
+        var lucasMaior = lucasGastosLista.length > 0 ? Math.max.apply(null, lucasGastosLista) : 0;
+        var beatrizMaior = beatrizGastosLista.length > 0 ? Math.max.apply(null, beatrizGastosLista) : 0;
         
-        // Atualizar cards
-        document.getElementById('lucasTotal')?.innerHTML = `R$ ${lucasTotal.toFixed(2)}`;
-        document.getElementById('lucasMedia')?.innerHTML = `R$ ${lucasMedia.toFixed(2)}`;
-        document.getElementById('lucasMaior')?.innerHTML = `R$ ${lucasMaior.toFixed(2)}`;
-        document.getElementById('lucasGastos')?.innerHTML = `${lucasGastos.length} gastos`;
+        // Atualizar elementos
+        var lucasTotalEl = document.getElementById('lucasTotal');
+        var lucasMediaEl = document.getElementById('lucasMedia');
+        var lucasMaiorEl = document.getElementById('lucasMaior');
+        var lucasGastosEl = document.getElementById('lucasGastos');
         
-        document.getElementById('beatrizTotal')?.innerHTML = `R$ ${beatrizTotal.toFixed(2)}`;
-        document.getElementById('beatrizMedia')?.innerHTML = `R$ ${beatrizMedia.toFixed(2)}`;
-        document.getElementById('beatrizMaior')?.innerHTML = `R$ ${beatrizMaior.toFixed(2)}`;
-        document.getElementById('beatrizGastos')?.innerHTML = `${beatrizGastos.length} gastos`;
+        var beatrizTotalEl = document.getElementById('beatrizTotal');
+        var beatrizMediaEl = document.getElementById('beatrizMedia');
+        var beatrizMaiorEl = document.getElementById('beatrizMaior');
+        var beatrizGastosEl = document.getElementById('beatrizGastos');
+        
+        if (lucasTotalEl) lucasTotalEl.innerHTML = 'R$ ' + lucasTotal.toFixed(2);
+        if (lucasMediaEl) lucasMediaEl.innerHTML = 'R$ ' + lucasMedia.toFixed(2);
+        if (lucasMaiorEl) lucasMaiorEl.innerHTML = 'R$ ' + lucasMaior.toFixed(2);
+        if (lucasGastosEl) lucasGastosEl.innerHTML = lucasGastosLista.length + ' gastos';
+        
+        if (beatrizTotalEl) beatrizTotalEl.innerHTML = 'R$ ' + beatrizTotal.toFixed(2);
+        if (beatrizMediaEl) beatrizMediaEl.innerHTML = 'R$ ' + beatrizMedia.toFixed(2);
+        if (beatrizMaiorEl) beatrizMaiorEl.innerHTML = 'R$ ' + beatrizMaior.toFixed(2);
+        if (beatrizGastosEl) beatrizGastosEl.innerHTML = beatrizGastosLista.length + ' gastos';
         
         // Ranking
-        const rankingContainer = document.getElementById('rankingListModern');
+        var rankingContainer = document.getElementById('rankingListModern');
         if (rankingContainer) {
-            const economizou = lucasTotal < beatrizTotal ? 'LUCAS' : 'BEATRIZ';
-            const diferenca = Math.abs(lucasTotal - beatrizTotal);
+            var economizou = lucasTotal < beatrizTotal ? 'LUCAS' : 'BEATRIZ';
+            var diferenca = Math.abs(lucasTotal - beatrizTotal);
+            var totalGeral = lucasTotal + beatrizTotal;
+            var lucasPercent = totalGeral > 0 ? (lucasTotal / totalGeral) * 100 : 0;
+            var beatrizPercent = totalGeral > 0 ? (beatrizTotal / totalGeral) * 100 : 0;
             
-            rankingContainer.innerHTML = `
-                <div class="ranking-modern">
-                    <div class="ranking-winner">
-                        <span class="winner-icon">🏆</span>
-                        <span class="winner-name">${economizou}</span>
-                        <span class="winner-desc">Economizou R$ ${diferenca.toFixed(2)} a mais</span>
-                    </div>
-                    <div class="ranking-stats">
-                        <div class="stat-bar">
-                            <div class="stat-label">LUCAS</div>
-                            <div class="stat-bar-bg">
-                                <div class="stat-bar-fill" style="width: ${(lucasTotal / (lucasTotal + beatrizTotal)) * 100}%; background: #3b82f6"></div>
-                            </div>
-                            <div class="stat-value">R$ ${lucasTotal.toFixed(2)}</div>
-                        </div>
-                        <div class="stat-bar">
-                            <div class="stat-label">BEATRIZ</div>
-                            <div class="stat-bar-bg">
-                                <div class="stat-bar-fill" style="width: ${(beatrizTotal / (lucasTotal + beatrizTotal)) * 100}%; background: #ec489a"></div>
-                            </div>
-                            <div class="stat-value">R$ ${beatrizTotal.toFixed(2)}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            rankingContainer.innerHTML = '<div class="ranking-modern">' +
+                '<div class="ranking-winner">' +
+                '<span class="winner-icon">🏆</span>' +
+                '<span class="winner-name">' + economizou + '</span>' +
+                '<span class="winner-desc">Economizou R$ ' + diferenca.toFixed(2) + ' a mais</span>' +
+                '</div>' +
+                '<div class="ranking-stats">' +
+                '<div class="stat-bar">' +
+                '<div class="stat-label">LUCAS</div>' +
+                '<div class="stat-bar-bg">' +
+                '<div class="stat-bar-fill" style="width: ' + lucasPercent + '%; background: #3b82f6"></div>' +
+                '</div>' +
+                '<div class="stat-value">R$ ' + lucasTotal.toFixed(2) + '</div>' +
+                '</div>' +
+                '<div class="stat-bar">' +
+                '<div class="stat-label">BEATRIZ</div>' +
+                '<div class="stat-bar-bg">' +
+                '<div class="stat-bar-fill" style="width: ' + beatrizPercent + '%; background: #ec489a"></div>' +
+                '</div>' +
+                '<div class="stat-value">R$ ' + beatrizTotal.toFixed(2) + '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
         }
         
         // Gráfico
-        const ctx = document.getElementById('personComparisonChart');
+        var ctx = document.getElementById('personComparisonChart');
         if (ctx && typeof Chart !== 'undefined') {
             if (personComparisonChart) personComparisonChart.destroy();
             
@@ -86,8 +120,8 @@
                         label: 'Gastos totais (R$)',
                         data: [lucasTotal, beatrizTotal],
                         backgroundColor: ['#3b82f6', '#ec489a'],
-                        borderRadius: 12,
-                        barPercentage: 0.6
+                        borderRadius: 8,
+                        barPercentage: 0.5
                     }]
                 },
                 options: {
@@ -95,9 +129,9 @@
                     maintainAspectRatio: true,
                     plugins: {
                         legend: { position: 'top' },
-                        tooltip: { callbacks: { label: (ctx) => `R$ ${ctx.raw.toFixed(2)}` } }
+                        tooltip: { callbacks: { label: function(ctx) { return 'R$ ' + ctx.raw.toFixed(2); } } }
                     },
-                    scales: { y: { beginAtZero: true, ticks: { callback: (v) => `R$ ${v}` } } }
+                    scales: { y: { beginAtZero: true, ticks: { callback: function(v) { return 'R$ ' + v; } } } }
                 }
             });
         }
