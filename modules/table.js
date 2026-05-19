@@ -1,6 +1,11 @@
 function renderTable() {
     const tbody = document.getElementById('tableBody');
     
+    if (!tbody) {
+        console.error('Elemento tableBody não encontrado');
+        return;
+    }
+    
     if (!filteredData || filteredData.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7">Nenhum lançamento encontrado.</td></tr>';
         return;
@@ -19,7 +24,9 @@ function renderTable() {
         row.insertCell(2).innerText = item.tipo;
         row.insertCell(3).innerText = item.categoria;
         row.insertCell(4).innerText = item.quem;
-        row.insertCell(5).innerText = item.metodo;
-        row.insertCell(6).innerText = item.descricao;
+        row.insertCell(5).innerText = item.metodo || '-';
+        row.insertCell(6).innerText = item.descricao || 'Sem descrição';
     });
+    
+    console.log(`Tabela renderizada com ${filteredData.length} registros`);
 }

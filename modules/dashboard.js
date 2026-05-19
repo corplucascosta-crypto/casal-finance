@@ -1,6 +1,14 @@
 function renderDashboard() {
     let totalIncome = 0, totalExpense = 0;
     
+    if (!filteredData || filteredData.length === 0) {
+        console.log('Sem dados para renderizar dashboard');
+        document.getElementById('totalIncome').innerHTML = 'R$ 0,00';
+        document.getElementById('totalExpense').innerHTML = 'R$ 0,00';
+        document.getElementById('totalBalance').innerHTML = 'R$ 0,00';
+        return;
+    }
+    
     filteredData.forEach(item => {
         if (item.tipo === 'Receita') {
             totalIncome += item.valor;
@@ -25,9 +33,18 @@ function renderDashboard() {
         }
     });
     
-    const ctx = document.getElementById('expenseChart').getContext('2d');
-    if (window.expenseChart) window.expenseChart.destroy();
+    const ctx = document.getElementById('expenseChart');
+    if (!ctx) {
+        console.error('Elemento expenseChart não encontrado');
+        return;
+    }
     
+    // Destruir gráfico existente corretamente
+    if (window.expenseChart && typeof window.expenseChart.destroy === 'function') {
+        window.expenseChart.destroy();
+    }
+    
+    // Criar novo gráfico
     window.expenseChart = new Chart(ctx, {
         type: 'bar',
         data: {

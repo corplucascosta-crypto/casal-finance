@@ -1,10 +1,10 @@
 // Módulo principal
 let rawData = [];
 let filteredData = [];
-let expenseChart = null;
 
 // Inicialização
 async function init() {
+    console.log('Iniciando app...');
     await loadCSVData();
     setupEventListeners();
     renderDashboard();
@@ -13,18 +13,24 @@ async function init() {
 }
 
 function setupEventListeners() {
-    document.getElementById('filterPerson').addEventListener('change', applyFilters);
-    document.getElementById('filterType').addEventListener('change', applyFilters);
-    document.getElementById('filterCategory').addEventListener('change', applyFilters);
-    document.getElementById('searchDescription').addEventListener('input', applyFilters);
-    document.getElementById('resetFilters').addEventListener('click', resetFilters);
+    const filterPerson = document.getElementById('filterPerson');
+    const filterType = document.getElementById('filterType');
+    const filterCategory = document.getElementById('filterCategory');
+    const searchDescription = document.getElementById('searchDescription');
+    const resetFilters = document.getElementById('resetFilters');
+    
+    if (filterPerson) filterPerson.addEventListener('change', applyFilters);
+    if (filterType) filterType.addEventListener('change', applyFilters);
+    if (filterCategory) filterCategory.addEventListener('change', applyFilters);
+    if (searchDescription) searchDescription.addEventListener('input', applyFilters);
+    if (resetFilters) resetFilters.addEventListener('click', resetFilters);
 }
 
 function applyFilters() {
-    const person = document.getElementById('filterPerson').value;
-    const type = document.getElementById('filterType').value;
-    const category = document.getElementById('filterCategory').value;
-    const search = document.getElementById('searchDescription').value.toLowerCase();
+    const person = document.getElementById('filterPerson')?.value || 'all';
+    const type = document.getElementById('filterType')?.value || 'all';
+    const category = document.getElementById('filterCategory')?.value || 'all';
+    const search = document.getElementById('searchDescription')?.value.toLowerCase() || '';
 
     filteredData = rawData.filter(item => {
         if (person !== 'all' && item.quem !== person) return false;
@@ -39,16 +45,26 @@ function applyFilters() {
 }
 
 function resetFilters() {
-    document.getElementById('filterPerson').value = 'all';
-    document.getElementById('filterType').value = 'all';
-    document.getElementById('filterCategory').value = 'all';
-    document.getElementById('searchDescription').value = '';
+    const filterPerson = document.getElementById('filterPerson');
+    const filterType = document.getElementById('filterType');
+    const filterCategory = document.getElementById('filterCategory');
+    const searchDescription = document.getElementById('searchDescription');
+    
+    if (filterPerson) filterPerson.value = 'all';
+    if (filterType) filterType.value = 'all';
+    if (filterCategory) filterCategory.value = 'all';
+    if (searchDescription) searchDescription.value = '';
+    
     applyFilters();
 }
 
 function updateLastUpdateTime() {
     const now = new Date();
-    document.getElementById('lastUpdate').innerText = `Última atualização: ${now.toLocaleString()}`;
+    const updateEl = document.getElementById('lastUpdate');
+    if (updateEl) {
+        updateEl.innerText = `Última atualização: ${now.toLocaleString()}`;
+    }
 }
 
-init();
+// Aguardar o DOM carregar completamente
+document.addEventListener('DOMContentLoaded', init);
