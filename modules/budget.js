@@ -8,11 +8,7 @@
     function initBudgets() {
         loadBudgets();
         setupBudgetEvents();
-        
-        setTimeout(() => {
-            popularSelectCategorias();
-            window.renderBudgets();
-        }, 500);
+        popularSelectCategorias();
         
         document.addEventListener('categoriasAtualizadas', () => {
             popularSelectCategorias();
@@ -22,6 +18,8 @@
         document.addEventListener('dadosCarregados', () => {
             window.renderBudgets();
         });
+        
+        window.renderBudgets();
     }
     
     function popularSelectCategorias() {
@@ -71,16 +69,20 @@
         } else {
             budgets = [];
         }
+        console.log('Budgets carregados:', budgets.length);
     }
     
     function saveBudgets() {
         localStorage.setItem('budgets', JSON.stringify(budgets));
+        console.log('Budgets salvos:', budgets.length);
     }
     
     function addBudget() {
         const categoria = document.getElementById('budgetCategorySelect')?.value;
         const limite = parseFloat(document.getElementById('budgetLimitInput')?.value);
         const cor = document.getElementById('budgetColorInput')?.value;
+        
+        console.log('Adicionando meta:', { categoria, limite, cor });
         
         if (!categoria || !limite || limite <= 0) {
             if (window.showNotification) window.showNotification('❌ Preencha todos os campos corretamente', 'error');
@@ -113,6 +115,8 @@
     window.renderBudgets = function() {
         const container = document.getElementById('budgetsList');
         if (!container) return;
+        
+        console.log('Renderizando budgets...', budgets.length);
         
         if (budgets.length === 0) {
             container.innerHTML = '<p class="no-data">Nenhuma meta cadastrada. Adicione uma meta acima!</p>';

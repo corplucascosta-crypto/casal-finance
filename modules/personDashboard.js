@@ -6,11 +6,27 @@
     let personComparisonChart = null;
     
     function initPersonDashboard() {
-        renderPersonDashboard();
+        document.addEventListener('dadosCarregados', () => window.renderPersonDashboard());
+        window.renderPersonDashboard();
     }
     
     window.renderPersonDashboard = function() {
-        if (!window.filteredData) return;
+        console.log('Renderizando Person Dashboard...');
+        
+        if (!window.filteredData || window.filteredData.length === 0) {
+            console.log('Sem dados para Person Dashboard');
+            const pessoas = ['LUCAS', 'BEATRIZ'];
+            pessoas.forEach(p => {
+                const idPrefix = p.toLowerCase();
+                const gastoEl = document.getElementById(`${idPrefix}Gasto`);
+                const mediaEl = document.getElementById(`${idPrefix}Media`);
+                const maiorEl = document.getElementById(`${idPrefix}Maior`);
+                if (gastoEl) gastoEl.innerHTML = 'R$ 0,00';
+                if (mediaEl) mediaEl.innerHTML = 'R$ 0,00';
+                if (maiorEl) maiorEl.innerHTML = 'R$ 0,00';
+            });
+            return;
+        }
         
         const gastosPorPessoa = {
             LUCAS: { total: 0, valores: [], dias: new Set() },
@@ -21,12 +37,13 @@
             .filter(item => item.tipo === 'Despesa')
             .forEach(item => {
                 const pessoa = item.quem;
-                if (gastosPorPessoa[pessoa]) {
+                if (pessoa === 'LUCAS' || pessoa === 'BEATRIZ') {
                     gastosPorPessoa[pessoa].total += item.valor;
                     gastosPorPessoa[pessoa].valores.push(item.valor);
                     
-                    const data = item.data.split(' ')[0];
-                    gastosPorPessoa[pessoa].dias.add(data);
+                    // Usar a data já processada
+                    const data = item.data || (item.dataRaw ? item.dataRaw.split(' ')[0] : null);
+                    if (data) gastosPorPessoa[pessoa].dias.add(data);
                 }
             });
         
@@ -35,7 +52,7 @@
             const total = dados.total;
             const numDias = dados.dias.size || 1;
             const mediaDiaria = total / numDias;
-            const maiorGasto = Math.max(...dados.valores, 0);
+            const maiorGasto = dados.valores.length > 0 ? Math.max(...dados.valores) : 0;
             
             const idPrefix = pessoa.toLowerCase();
             const gastoEl = document.getElementById(`${idPrefix}Gasto`);
@@ -52,27 +69,27 @@
         const beatrizTotal = gastosPorPessoa.BEATRIZ.total;
         
         const ranking = [
-            { nome: 'LUCAS', gasto: lucasTotal, economia: 0 },
-            { nome: 'BEATRIZ', gasto: beatrizTotal, economia: 0 }
+            { nome: 'LUCAS', gasto: lucasTotal },
+            { nome: 'BEATRIZ', gasto: beatrizTotal }
         ];
-        
-        const menorGasto = Math.min(lucasTotal, beatrizTotal);
-        ranking.forEach(p => {
-            p.economia = p.gasto - menorGasto;
-        });
         
         ranking.sort((a, b) => a.gasto - b.gasto);
         
+        const menorGasto = ranking[0]?.gasto || 0;
+        
         const rankingContainer = document.getElementById('rankingList');
         if (rankingContainer) {
-            rankingContainer.innerHTML = ranking.map((p, idx) => `
-                <div class="ranking-item ${idx === 0 ? 'winner' : ''}">
-                    <span class="ranking-position">${idx === 0 ? '🥇' : '🥈'}</span>
-                    <span class="ranking-name">${p.nome}</span>
-                    <span class="ranking-gasto">R$ ${p.gasto.toFixed(2)}</span>
-                    <span class="ranking-economia">${p.economia === 0 ? '🎯 Economizou mais!' : `R$ ${p.economia.toFixed(2)} a mais`}</span>
-                </div>
-            `).join('');
+            rankingContainer.innerHTML = ranking.map((p, idx) => {
+                const economia = p.gasto - menorGasto;
+                return `
+                    <div class="ranking-item ${idx === 0 ? 'winner' : ''}">
+                        <span class="ranking-position">${idx === 0 ? '🥇' : '🥈'}</span>
+                        <span class="ranking-name">${p.nome}</span>
+                        <span class="ranking-gasto">R$ ${p.gasto.toFixed(2)}</span>
+                        <span class="ranking-economia">${idx === 0 ? '🎯 Economizou mais!' : `R$ ${economia.toFixed(2)} a mais`}</span>
+                    </div>
+                `;
+            }).join('');
         }
         
         // Gráfico comparativo
@@ -105,6 +122,8 @@
                 }
             });
         }
+        
+        console.log('Person Dashboard - Lucas:', lucasTotal, 'Beatriz:', beatrizTotal);
     };
     
     document.addEventListener('DOMContentLoaded', initPersonDashboard);
