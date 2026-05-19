@@ -9,6 +9,11 @@
         loadCategories();
         criarModalCategorias();
         adicionarBotaoCategorias();
+        
+        // Atualizar selects de categoria quando houver mudanças
+        document.addEventListener('categoriasAtualizadas', () => {
+            atualizarSelectsCategoria();
+        });
     }
     
     function loadCategories() {
@@ -16,7 +21,7 @@
         if (saved) {
             window.categoriasPersonalizadas = JSON.parse(saved);
         } else {
-            // Categorias padrão
+            // Categorias padrão baseadas nos dados do CSV
             window.categoriasPersonalizadas = [
                 { id: 1, nome: 'Alimentação', cor: '#ef4444', icone: '🍔', ativo: true },
                 { id: 2, nome: 'Lazer', cor: '#f59e0b', icone: '🎮', ativo: true },
@@ -24,7 +29,8 @@
                 { id: 4, nome: 'Saúde', cor: '#3b82f6', icone: '💊', ativo: true },
                 { id: 5, nome: 'Educação', cor: '#8b5cf6', icone: '📚', ativo: true },
                 { id: 6, nome: 'Moradia', cor: '#ec489a', icone: '🏠', ativo: true },
-                { id: 7, nome: 'Investimentos', cor: '#14b8a6', icone: '📈', ativo: true }
+                { id: 7, nome: 'Investimentos', cor: '#14b8a6', icone: '📈', ativo: true },
+                { id: 8, nome: 'Vestuário', cor: '#f97316', icone: '👕', ativo: true }
             ];
             saveCategories();
         }
@@ -32,28 +38,38 @@
     
     function saveCategories() {
         localStorage.setItem('customCategories', JSON.stringify(window.categoriasPersonalizadas));
-        atualizarFiltroCategorias();
+        document.dispatchEvent(new Event('categoriasAtualizadas'));
     }
     
-    function atualizarFiltroCategorias() {
-        const categorySelect = document.getElementById('filterCategory');
-        if (!categorySelect) return;
-        
-        const currentValue = categorySelect.value;
-        categorySelect.innerHTML = '<option value="all">Todas as categorias</option>';
-        
-        window.categoriasPersonalizadas
-            .filter(cat => cat.ativo)
-            .forEach(cat => {
-                categorySelect.innerHTML += `<option value="${cat.nome}">${cat.icone || '📁'} ${cat.nome}</option>`;
+    function atualizarSelectsCategoria() {
+        // Atualizar select do filtro de categorias
+        const filterSelect = document.getElementById('filterCategory');
+        if (filterSelect) {
+            const currentValue = filterSelect.value;
+            filterSelect.innerHTML = '<option value="all">Todas as categorias</option>';
+            window.categoriasPersonalizadas.forEach(cat => {
+                filterSelect.innerHTML += `<option value="${cat.nome}">${cat.icone || '📁'} ${cat.nome}</option>`;
             });
+            if (currentValue !== 'all' && filterSelect.querySelector(`option[value="${currentValue}"]`)) {
+                filterSelect.value = currentValue;
+            }
+        }
         
-        if (currentValue !== 'all' && categorySelect.querySelector(`option[value="${currentValue}"]`)) {
-            categorySelect.value = currentValue;
+        // Atualizar select do budget
+        const budgetSelect = document.getElementById('budgetCategorySelect');
+        if (budgetSelect) {
+            budgetSelect.innerHTML = '<option value="">Selecione a categoria</option>';
+            window.categoriasPersonalizadas.forEach(cat => {
+                budgetSelect.innerHTML += `<option value="${cat.nome}">${cat.icone || '📁'} ${cat.nome}</option>`;
+            });
         }
     }
     
     function adicionarBotaoCategorias() {
+        // Remover botão duplicado se existir
+        const existingBtn = document.getElementById('manageCategoriesBtn');
+        if (existingBtn) existingBtn.remove();
+        
         const filtersDiv = document.querySelector('.filters');
         if (!filtersDiv) return;
         
@@ -62,10 +78,18 @@
         btnContainer.innerHTML = `<button id="manageCategoriesBtn" class="manage-categories-btn">🏷️ Gerenciar Categorias</button>`;
         
         filtersDiv.appendChild(btnContainer);
-        document.getElementById('manageCategoriesBtn')?.addEventListener('click', abrirModalCategorias);
+        
+        const manageBtn = document.getElementById('manageCategoriesBtn');
+        if (manageBtn) {
+            manageBtn.addEventListener('click', abrirModalCategorias);
+        }
     }
     
     function criarModalCategorias() {
+        // Remover modal existente se houver
+        const existingModal = document.getElementById('categoriesModal');
+        if (existingModal) existingModal.remove();
+        
         const modal = document.createElement('div');
         modal.id = 'categoriesModal';
         modal.className = 'modal';
@@ -89,11 +113,24 @@
         
         document.body.appendChild(modal);
         
-        document.querySelector('.modal-close')?.addEventListener('click', () => {
-            modal.style.display = 'none';
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+        
+        // Fechar ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
         });
         
-        document.getElementById('addCategoryBtn')?.addEventListener('click', addCategory);
+        const addBtn = document.getElementById('addCategoryBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', addCategory);
+        }
     }
     
     function abrirModalCategorias() {
@@ -132,12 +169,11 @@
                 const cat = window.categoriasPersonalizadas.find(c => c.id === id);
                 if (cat) {
                     const novoNome = prompt('Novo nome:', cat.nome);
-                    if (novoNome) cat.nome = novoNome;
+                    if (novoNome && novoNome.trim()) cat.nome = novoNome.trim();
                     const novoIcone = prompt('Novo emoji:', cat.icone || '📁');
-                    if (novoIcone) cat.icone = novoIcone;
+                    if (novoIcone && novoIcone.trim()) cat.icone = novoIcone.trim().substring(0, 2);
                     saveCategories();
                     renderCategoriesList();
-                    atualizarFiltroCategorias();
                     if (window.showNotification) window.showNotification(`✏️ Categoria "${cat.nome}" atualizada`, 'success');
                 }
             });
@@ -155,7 +191,6 @@
                     window.categoriasPersonalizadas = window.categoriasPersonalizadas.filter(c => c.id !== id);
                     saveCategories();
                     renderCategoriesList();
-                    atualizarFiltroCategorias();
                     if (window.showNotification) window.showNotification(`🗑️ Categoria "${cat.nome}" removida`, 'success');
                 }
             });
@@ -163,9 +198,9 @@
     }
     
     function addCategory() {
-        const nome = document.getElementById('newCatNome')?.value;
+        const nome = document.getElementById('newCatNome')?.value?.trim();
         const cor = document.getElementById('newCatCor')?.value;
-        const icone = document.getElementById('newCatIcone')?.value || '📁';
+        const icone = document.getElementById('newCatIcone')?.value?.trim() || '📁';
         
         if (!nome) {
             if (window.showNotification) window.showNotification('❌ Digite o nome da categoria', 'error');
@@ -181,13 +216,12 @@
             id: Date.now(),
             nome: nome,
             cor: cor,
-            icone: icone,
+            icone: icone.substring(0, 2),
             ativo: true
         });
         
         saveCategories();
         renderCategoriesList();
-        atualizarFiltroCategorias();
         
         document.getElementById('newCatNome').value = '';
         document.getElementById('newCatIcone').value = '';

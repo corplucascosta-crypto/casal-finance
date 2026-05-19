@@ -6,26 +6,20 @@ async function loadCSVData() {
         const response = await fetch(CSV_URL);
         const texto = await response.text();
         
-        // Dividir em linhas
         const linhas = texto.split('\n');
         console.log('Total de linhas:', linhas.length);
         
-        rawData = [];
+        window.rawData = [];
         const categoriasSet = new Set();
         
-        // Pular cabeçalho (linha 0)
         for (let i = 1; i < linhas.length; i++) {
             const linha = linhas[i].trim();
             if (!linha) continue;
             
-            // Dividir por vírgula
             const colunas = linha.split(',');
             
-            // Mapeamento correto das colunas
-            // 0: data, 1: valor, 2: tipo, 3: categoria, 4: subcategoria, 
-            // 5: metodo, 6: parcelas, 7: quem, 8: descricao, 9: tipoGasto
             const data = colunas[0] || '';
-            const valor = parseFloat(colunas[1]) || 0;  // Agora é número puro!
+            const valor = parseFloat(colunas[1]) || 0;
             const tipo = colunas[2] || '';
             const categoria = colunas[3] || 'Outros';
             const subcategoria = colunas[4] || '';
@@ -35,10 +29,8 @@ async function loadCSVData() {
             const descricao = colunas[8] || 'Sem descrição';
             const tipoGasto = colunas[9] || '';
             
-            console.log(`Linha ${i}:`, { data, valor, tipo, categoria, quem });
-            
             if (tipo && (tipo === 'Despesa' || tipo === 'Receita') && !isNaN(valor)) {
-                rawData.push({
+                window.rawData.push({
                     data: data,
                     valor: valor,
                     tipo: tipo,
@@ -57,17 +49,10 @@ async function loadCSVData() {
             }
         }
         
-        console.log('Dados carregados:', rawData.length);
-        console.log('Primeiro item:', rawData[0]);
+        window.filteredData = [...window.rawData];
         
-        // Calcular totais para debug
-        let totalReceitas = 0, totalDespesas = 0;
-        rawData.forEach(item => {
-            if (item.tipo === 'Receita') totalReceitas += item.valor;
-            if (item.tipo === 'Despesa') totalDespesas += item.valor;
-        });
-        console.log('Total Receitas:', totalReceitas);
-        console.log('Total Despesas:', totalDespesas);
+        console.log('Dados carregados:', window.rawData.length);
+        console.log('Categorias encontradas:', Array.from(categoriasSet));
         
         // Atualizar filtro de categorias
         const categorySelect = document.getElementById('filterCategory');
@@ -78,11 +63,9 @@ async function loadCSVData() {
             });
         }
         
-        filteredData = [...rawData];
-        
-        // Renderizar
-        if (typeof renderDashboard === 'function') renderDashboard();
-        if (typeof renderTable === 'function') renderTable();
+        // Disparar evento de dados carregados
+        const event = new CustomEvent('dadosCarregados', { detail: { dados: window.rawData } });
+        document.dispatchEvent(event);
         
         // Atualizar timestamp
         const now = new Date();
@@ -91,11 +74,23 @@ async function loadCSVData() {
             updateEl.innerText = `Última atualização: ${now.toLocaleString()}`;
         }
         
+        // Forçar renderização de todos os módulos
+        setTimeout(() => {
+            if (typeof renderDashboard === 'function') renderDashboard();
+            if (typeof renderTable === 'function') renderTable();
+            if (typeof renderForecast === 'function') renderForecast();
+            if (typeof renderComparison === 'function') renderComparison();
+            if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+            if (typeof renderDailyChart === 'function') renderDailyChart();
+            if (typeof renderAnalytics === 'function') renderAnalytics();
+            if (typeof renderBudgets === 'function') renderBudgets();
+        }, 100);
+        
     } catch (error) {
         console.error('Erro ao carregar CSV:', error);
         const tbody = document.getElementById('tableBody');
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="7">Erro ao carregar dados. Verifique o console.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7">Erro ao carregar dados. Verifique o console. </td</tr>';
         }
     }
 }

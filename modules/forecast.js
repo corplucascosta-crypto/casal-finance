@@ -4,13 +4,17 @@
     window.forecastInitialized = true;
     
     function initForecast() {
+        window.renderForecast = renderForecast;
+        document.addEventListener('dadosCarregados', () => renderForecast());
         renderForecast();
     }
     
-    window.renderForecast = function() {
-        if (!window.filteredData) return;
+    function renderForecast() {
+        if (!window.filteredData || window.filteredData.length === 0) {
+            console.log('Sem dados para forecast');
+            return;
+        }
         
-        // Calcular gastos do mês atual
         const now = new Date();
         const mesAtual = String(now.getMonth() + 1).padStart(2, '0');
         const anoAtual = now.getFullYear();
@@ -23,16 +27,13 @@
         
         const totalGasto = despesasMes.reduce((sum, item) => sum + item.valor, 0);
         
-        // Dias úteis restantes no mês
         const ultimoDiaMes = new Date(anoAtual, parseInt(mesAtual), 0).getDate();
         const diaAtual = now.getDate();
         const diasRestantes = ultimoDiaMes - diaAtual;
         
-        // Média diária baseada nos dias já passados
         const mediaDiaria = diaAtual > 0 ? totalGasto / diaAtual : 0;
         const projecaoMensal = mediaDiaria * ultimoDiaMes;
         
-        // Receitas do mês
         const receitasMes = window.filteredData.filter(item => {
             if (item.tipo !== 'Receita') return false;
             const data = new Date(item.data);
@@ -41,7 +42,6 @@
         
         const totalReceitas = receitasMes.reduce((sum, item) => sum + item.valor, 0);
         
-        // Adicionar receitas fixas
         const totalReceitasFixas = (window.fixedIncomes || [])
             .filter(inc => inc.ativo)
             .reduce((sum, inc) => sum + inc.valor, 0);
@@ -60,7 +60,6 @@
         if (orcamentoEl) orcamentoEl.innerHTML = `R$ ${orcamentoRestante.toFixed(2)}`;
         if (porDiaEl) porDiaEl.innerHTML = `R$ ${orcamentoPorDia.toFixed(2)}`;
         
-        // Destaque se orçamento estiver baixo
         if (orcamentoEl) {
             if (orcamentoRestante < 0) {
                 orcamentoEl.style.color = '#ef4444';
@@ -70,15 +69,8 @@
                 orcamentoEl.style.color = '#10b981';
             }
         }
-    };
-    
-    // Atualizar quando os dados mudarem
-    const originalRenderDashboard = window.renderDashboard;
-    if (originalRenderDashboard) {
-        window.renderDashboard = function() {
-            originalRenderDashboard();
-            window.renderForecast();
-        };
+        
+        console.log('Forecast atualizado - Total gasto:', totalGasto);
     }
     
     document.addEventListener('DOMContentLoaded', initForecast);
