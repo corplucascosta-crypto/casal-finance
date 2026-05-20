@@ -7,7 +7,7 @@
     var SUPABASE_URL = 'https://bnxlpdwcismmxsakhtnp.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJueGxwZHdjaXNtbXhzYWtodG5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODE3OTksImV4cCI6MjA5NDg1Nzc5OX0.mEG_5q26fYtaf_2-6NTLnOWX7E03G0L9V5PvGv-Krp8';
     
-    var supabase = null;
+    var supabaseInstance = null;
     
     function initSupabase() {
         console.log('Inicializando Supabase...');
@@ -17,27 +17,40 @@
     function carregarSupabaseLib() {
         // Verificar se já existe
         if (window.supabase) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             console.log('Supabase já carregado!');
-            carregarDados();
-            adicionarBotaoNovoLancamento();
-            configurarRealtime();
+            finalizarInicializacao();
             return;
         }
         
         var script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
         script.onload = function() {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             console.log('Supabase conectado!');
-            carregarDados();
-            adicionarBotaoNovoLancamento();
-            configurarRealtime();
+            finalizarInicializacao();
         };
         script.onerror = function() {
             console.error('Erro ao carregar Supabase');
         };
         document.head.appendChild(script);
+    }
+    
+    function finalizarInicializacao() {
+        // Expor globalmente para outros módulos
+        window.supabaseClient = {
+            supabase: supabaseInstance,
+            isReady: true
+        };
+        
+        // Disparar evento
+        var event = new Event('supabaseReady');
+        window.dispatchEvent(event);
+        
+        // Carregar dados
+        carregarDados();
+        adicionarBotaoNovoLancamento();
+        configurarRealtime();
     }
     
     function adicionarBotaoNovoLancamento() {
@@ -136,7 +149,7 @@
         console.log('Enviando dados:', dados);
         
         try {
-            var { data, error } = await supabase
+            var { data, error } = await supabaseInstance
                 .from('lancamentos')
                 .insert([dados]);
             
@@ -159,14 +172,14 @@
     }
     
     async function carregarDados() {
-        if (!supabase) {
+        if (!supabaseInstance) {
             console.log('Aguardando Supabase...');
             return;
         }
         
         console.log('Carregando dados do Supabase...');
         
-        var { data, error } = await supabase
+        var { data, error } = await supabaseInstance
             .from('lancamentos')
             .select('*')
             .order('data_hora', { ascending: false });
@@ -176,7 +189,13 @@
             return;
         }
         
-        console.log('Dados recebidos:', data.length);
+        console.log('Dados recebidos:', data ? data.length : 0);
+        
+        if (!data) {
+            window.rawData = [];
+            window.filteredData = [];
+            return;
+        }
         
         // Converter dados do Supabase para o formato do app
         window.rawData = data.map(function(item) {
@@ -217,9 +236,9 @@
     }
     
     function configurarRealtime() {
-        if (!supabase) return;
+        if (!supabaseInstance) return;
         
-        supabase
+        supabaseInstance
             .channel('lancamentos')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lancamentos' }, function(payload) {
                 console.log('Mudança detectada em tempo real:', payload.eventType);
@@ -228,17 +247,6 @@
             .subscribe();
     }
     
-    // Expor funções globalmente
-    window.carregarDadosSupabase = carregarDados;
-    
+    // Inicializar
     document.addEventListener('DOMContentLoaded', initSupabase);
 })();
-
-// Expor Supabase globalmente para outros módulos
-window.supabaseClient = {
-    supabase: supabase,
-    isReady: true
-};
-
-// Disparar evento
-window.dispatchEvent(new Event('supabaseReady'));
