@@ -40,7 +40,7 @@ function renderTable() {
             var valor = parseFloat(btn.dataset.valor).toFixed(2);
             
             if (confirm('Excluir "' + descricao + '" (R$ ' + valor + ')? Esta ação não pode ser desfeita.')) {
-                excluirLancamento(btn.dataset.id);
+                excluirLancamento(parseInt(btn.dataset.id));
             }
         });
     });
@@ -50,9 +50,8 @@ function renderTable() {
 
 async function excluirLancamento(id) {
     console.log('=== INICIANDO EXCLUSÃO ===');
-    console.log('ID do lançamento:', id);
+    console.log('ID do lançamento (número):', id);
     
-    // Verificar se o Supabase está disponível
     if (!window.supabaseClient || !window.supabaseClient.supabase) {
         console.error('Supabase não disponível');
         if (window.showNotification) window.showNotification('❌ Erro: Sistema não disponível', 'error');
@@ -62,47 +61,27 @@ async function excluirLancamento(id) {
     var supabase = window.supabaseClient.supabase;
     
     try {
-        // Primeiro, buscar o lançamento para confirmar que existe
-        var { data: busca, error: buscaError } = await supabase
-            .from('lancamentos')
-            .select('id, descricao, valor')
-            .eq('id', parseInt(id));
-        
-        if (buscaError) {
-            console.error('Erro ao buscar:', buscaError);
-            if (window.showNotification) window.showNotification('❌ Erro ao localizar lançamento', 'error');
-            return;
-        }
-        
-        if (!busca || busca.length === 0) {
-            console.error('Lançamento não encontrado com ID:', id);
-            if (window.showNotification) window.showNotification('❌ Lançamento não encontrado', 'error');
-            return;
-        }
-        
-        console.log('Lançamento encontrado:', busca[0]);
-        
-        // Executar a exclusão
-        var { error: deleteError } = await supabase
+        // Executar a exclusão diretamente
+        var { error } = await supabase
             .from('lancamentos')
             .delete()
-            .eq('id', parseInt(id));
+            .eq('id', id);
         
-        if (deleteError) {
-            console.error('Erro na exclusão:', deleteError);
-            if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + deleteError.message, 'error');
+        if (error) {
+            console.error('Erro na exclusão:', error);
+            if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + error.message, 'error');
             return;
         }
         
         console.log('Exclusão realizada com sucesso!');
         
-        // Mostrar notificação de sucesso
+        // Mostrar notificação
         if (window.showNotification) {
-            window.showNotification('✅ Lançamento excluído! Atualizando...', 'success');
+            window.showNotification('✅ Lançamento excluído!', 'success');
         }
         
-        // Forçar recarregamento completo dos dados
-        await recarregarDadosCompletamente();
+        // Recarregar os dados
+        await carregarDadosDoSupabase();
         
     } catch (err) {
         console.error('Erro inesperado:', err);
@@ -110,11 +89,11 @@ async function excluirLancamento(id) {
     }
 }
 
-async function recarregarDadosCompletamente() {
+async function carregarDadosDoSupabase() {
     console.log('Recarregando dados do Supabase...');
     
     if (!window.supabaseClient || !window.supabaseClient.supabase) {
-        console.error('Supabase não disponível para recarregar');
+        console.error('Supabase não disponível');
         return;
     }
     
@@ -130,7 +109,7 @@ async function recarregarDadosCompletamente() {
         return;
     }
     
-    console.log('Dados recarregados:', data ? data.length : 0, 'registros');
+    console.log('Dados recebidos do Supabase:', data ? data.length : 0);
     
     // Atualizar os dados globais
     window.rawData = (data || []).map(function(item) {
@@ -163,13 +142,8 @@ async function recarregarDadosCompletamente() {
     if (typeof renderAnalytics === 'function') renderAnalytics();
     if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
     
-    // Atualizar timestamp
-    var updateEl = document.getElementById('lastUpdate');
-    if (updateEl) updateEl.innerText = 'Última atualização: ' + new Date().toLocaleString();
-    
-    console.log('Dados atualizados na interface!');
+    console.log('Interface atualizada com', window.rawData.length, 'registros');
 }
 
 window.renderTable = renderTable;
 window.excluirLancamento = excluirLancamento;
-window.recarregarDadosCompletamente = recarregarDadosCompletamente;
