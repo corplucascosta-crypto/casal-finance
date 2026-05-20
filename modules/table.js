@@ -7,7 +7,7 @@ function renderTable() {
     }
     
     if (!window.filteredData || window.filteredData.length === 0) {
-        tbody.innerHTML = '<table><td colspan="8">Nenhum lançamento encontrado. </td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8">Nenhum lançamento encontrado. </td</tr>';
         return;
     }
     
@@ -49,44 +49,127 @@ function renderTable() {
 }
 
 async function excluirLancamento(id) {
-    // Tentar obter o Supabase de diferentes formas
-    var supabase = null;
+    console.log('=== INICIANDO EXCLUSÃO ===');
+    console.log('ID do lançamento:', id);
     
-    if (window.supabaseClient && window.supabaseClient.supabase) {
-        supabase = window.supabaseClient.supabase;
-    } else if (window.supabase) {
-        supabase = window.supabase;
-    } else {
-        console.error('Supabase não encontrado');
+    // Verificar se o Supabase está disponível
+    if (!window.supabaseClient || !window.supabaseClient.supabase) {
+        console.error('Supabase não disponível');
         if (window.showNotification) window.showNotification('❌ Erro: Sistema não disponível', 'error');
         return;
     }
     
-    console.log('Excluindo lançamento ID:', id);
+    var supabase = window.supabaseClient.supabase;
     
     try {
-        var { error } = await supabase
+        // Primeiro, buscar o lançamento para confirmar que existe
+        var { data: busca, error: buscaError } = await supabase
+            .from('lancamentos')
+            .select('id, descricao, valor')
+            .eq('id', parseInt(id));
+        
+        if (buscaError) {
+            console.error('Erro ao buscar:', buscaError);
+            if (window.showNotification) window.showNotification('❌ Erro ao localizar lançamento', 'error');
+            return;
+        }
+        
+        if (!busca || busca.length === 0) {
+            console.error('Lançamento não encontrado com ID:', id);
+            if (window.showNotification) window.showNotification('❌ Lançamento não encontrado', 'error');
+            return;
+        }
+        
+        console.log('Lançamento encontrado:', busca[0]);
+        
+        // Executar a exclusão
+        var { error: deleteError } = await supabase
             .from('lancamentos')
             .delete()
             .eq('id', parseInt(id));
         
-        if (error) {
-            console.error('Erro ao excluir:', error);
-            if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + error.message, 'error');
+        if (deleteError) {
+            console.error('Erro na exclusão:', deleteError);
+            if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + deleteError.message, 'error');
             return;
         }
         
-        if (window.showNotification) window.showNotification('✅ Lançamento excluído! Recarregando...', 'success');
+        console.log('Exclusão realizada com sucesso!');
         
-        // Recarregar a página para garantir que os dados sejam atualizados
-        setTimeout(function() {
-            location.reload();
-        }, 1000);
+        // Mostrar notificação de sucesso
+        if (window.showNotification) {
+            window.showNotification('✅ Lançamento excluído! Atualizando...', 'success');
+        }
+        
+        // Forçar recarregamento completo dos dados
+        await recarregarDadosCompletamente();
         
     } catch (err) {
-        console.error('Erro:', err);
+        console.error('Erro inesperado:', err);
         if (window.showNotification) window.showNotification('❌ Erro ao excluir', 'error');
     }
 }
 
+async function recarregarDadosCompletamente() {
+    console.log('Recarregando dados do Supabase...');
+    
+    if (!window.supabaseClient || !window.supabaseClient.supabase) {
+        console.error('Supabase não disponível para recarregar');
+        return;
+    }
+    
+    var supabase = window.supabaseClient.supabase;
+    
+    var { data, error } = await supabase
+        .from('lancamentos')
+        .select('*')
+        .order('data_hora', { ascending: false });
+    
+    if (error) {
+        console.error('Erro ao recarregar:', error);
+        return;
+    }
+    
+    console.log('Dados recarregados:', data ? data.length : 0, 'registros');
+    
+    // Atualizar os dados globais
+    window.rawData = (data || []).map(function(item) {
+        var dataObj = new Date(item.data_hora);
+        var dataFormatada = dataObj.toLocaleDateString('pt-BR');
+        
+        return {
+            id: item.id,
+            dataRaw: dataFormatada,
+            data: dataFormatada,
+            valor: item.valor,
+            tipo: item.tipo,
+            categoria: item.categoria,
+            subcategoria: item.subcategoria || '',
+            metodo: item.metodo || '',
+            parcelas: item.parcelas || 1,
+            quem: item.quem,
+            descricao: item.descricao || 'Sem descrição',
+            tipoGasto: item.tipo_gasto || 'Essencial'
+        };
+    });
+    
+    window.filteredData = [...window.rawData];
+    
+    // Re-renderizar todos os componentes
+    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof renderTable === 'function') renderTable();
+    if (typeof renderForecast === 'function') renderForecast();
+    if (typeof renderDailyChart === 'function') renderDailyChart();
+    if (typeof renderAnalytics === 'function') renderAnalytics();
+    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+    
+    // Atualizar timestamp
+    var updateEl = document.getElementById('lastUpdate');
+    if (updateEl) updateEl.innerText = 'Última atualização: ' + new Date().toLocaleString();
+    
+    console.log('Dados atualizados na interface!');
+}
+
 window.renderTable = renderTable;
+window.excluirLancamento = excluirLancamento;
+window.recarregarDadosCompletamente = recarregarDadosCompletamente;
