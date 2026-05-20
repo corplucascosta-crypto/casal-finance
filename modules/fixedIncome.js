@@ -1,9 +1,10 @@
-// Fixed Income Module - Sincronizado via Supabase
+// Fixed Income Module - Sincronizado via Supabase (sem duplicação)
 (function() {
     if (window.fixedIncomeInitialized) return;
     window.fixedIncomeInitialized = true;
     
     var supabase = null;
+    var eventosConfigurados = false;
     
     function initFixedIncome() {
         // Aguardar Supabase estar disponível
@@ -11,8 +12,10 @@
             if (window.supabaseClient && window.supabaseClient.supabase) {
                 supabase = window.supabaseClient.supabase;
                 clearInterval(checkSupabase);
+                console.log('FixedIncome: Supabase disponível');
                 carregarReceitasFixas();
                 setupEvents();
+                configurarRealtimeReceitas();
             }
         }, 500);
     }
@@ -52,6 +55,8 @@
     async function salvarReceitaFixa(pessoa, descricao, valor) {
         if (!supabase) return false;
         
+        console.log('Salvando receita fixa:', { pessoa, descricao, valor });
+        
         var { data, error } = await supabase
             .from('receitas_fixas')
             .insert([{
@@ -67,7 +72,7 @@
             return false;
         }
         
-        console.log('Receita fixa salva:', data);
+        console.log('Receita fixa salva com sucesso');
         await carregarReceitasFixas();
         return true;
     }
@@ -107,9 +112,19 @@
     }
     
     function setupEvents() {
+        if (eventosConfigurados) return;
+        eventosConfigurados = true;
+        
         var addBtn = document.getElementById('addFixedIncomeBtn');
         if (addBtn) {
-            addBtn.addEventListener('click', function() {
+            // Remover evento anterior se existir
+            var novoBtn = addBtn.cloneNode(true);
+            addBtn.parentNode.replaceChild(novoBtn, addBtn);
+            
+            novoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 var pessoa = document.getElementById('fixedIncomePerson').value;
                 var descricao = document.getElementById('fixedIncomeDesc').value;
                 var valor = parseFloat(document.getElementById('fixedIncomeValue').value);
@@ -119,12 +134,18 @@
                     return;
                 }
                 
+                // Desabilitar botão temporariamente para evitar duplicação
+                novoBtn.disabled = true;
+                novoBtn.textContent = '⏳ Salvando...';
+                
                 salvarReceitaFixa(pessoa, descricao, valor).then(function(sucesso) {
                     if (sucesso) {
                         document.getElementById('fixedIncomeDesc').value = '';
                         document.getElementById('fixedIncomeValue').value = '';
                         if (window.showNotification) window.showNotification('✅ Receita fixa adicionada!', 'success');
                     }
+                    novoBtn.disabled = false;
+                    novoBtn.textContent = '➕ Adicionar';
                 });
             });
         }
@@ -201,7 +222,9 @@
         
         // Eventos dos botões toggle
         document.querySelectorAll('.toggle-income').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var id = parseInt(btn.dataset.id);
                 var income = window.fixedIncomes.find(function(i) { return i.id === id; });
                 if (income) {
@@ -212,7 +235,9 @@
         
         // Eventos dos botões delete
         document.querySelectorAll('.delete-income').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var id = parseInt(btn.dataset.id);
                 if (confirm('Remover esta receita fixa?')) {
                     deletarReceitaFixa(id);
@@ -221,7 +246,6 @@
         });
     }
     
-    // Configurar listener de tempo real para receitas fixas
     function configurarRealtimeReceitas() {
         if (!supabase) return;
         
@@ -237,14 +261,6 @@
     // Expor funções
     window.loadFixedIncomes = carregarReceitasFixas;
     window.renderFixedIncomes = renderFixedIncomes;
-    
-    // Inicializar quando o Supabase estiver pronto
-    window.addEventListener('supabaseReady', function() {
-        supabase = window.supabaseClient.supabase;
-        carregarReceitasFixas();
-        configurarRealtimeReceitas();
-        setupEvents();
-    });
     
     document.addEventListener('DOMContentLoaded', initFixedIncome);
 })();
