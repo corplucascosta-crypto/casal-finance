@@ -87,3 +87,23 @@ function updateLastUpdateTime() {
 
 // Aguardar DOM carregar
 document.addEventListener('DOMContentLoaded', init);
+
+// Botão de recarga forçada
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var reloadBtn = document.getElementById('forceReloadBtn');
+        if (reloadBtn) {
+            reloadBtn.addEventListener('click', function() {
+                console.log('Forçando recarga completa...');
+                if (typeof carregarDadosSupabase === 'function') {
+                    carregarDadosSupabase();
+                } else if (typeof recarregarDadosCompletamente === 'function') {
+                    recarregarDadosCompletamente();
+                } else {
+                    location.reload();
+                }
+                if (window.showNotification) window.showNotification('🔄 Recarregando dados...', 'info');
+            });
+        }
+    }, 1000);
+});
