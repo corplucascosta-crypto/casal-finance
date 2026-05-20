@@ -1,4 +1,4 @@
-// Supabase Client - Apenas data, sem horas
+// Supabase Client - Versão corrigida
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -181,7 +181,6 @@
                 var mesParcela = dataParcela.getMonth() + 1;
                 var diaParcela = dataParcela.getDate();
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
-                var dataParcelaStr = anoParcela + '-' + String(mesParcela).padStart(2,'0') + '-' + String(diaParcela).padStart(2,'0');
                 var dataParcelaFormatada = diaParcela + '/' + mesParcela + '/' + anoParcela;
                 
                 var dadosParcela = {
@@ -196,8 +195,7 @@
                     tipo_gasto: tipoGasto,
                     mes_referencia: mesParcela,
                     dia_semana: diaSemanaParcela,
-                    data: dataParcelaFormatada,
-                    data_hora: dataParcelaStr
+                    data_hora: dataParcelaFormatada
                 };
                 
                 await supabaseInstance.from('lancamentos').insert([dadosParcela]);
@@ -217,12 +215,12 @@
                 tipo_gasto: tipoGasto,
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
-                data: dataFormatada,
-                data_hora: dataSelecionada
+                data_hora: dataFormatada
             };
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
             if (error) {
+                console.error('Erro ao salvar:', error);
                 if (window.showNotification) window.showNotification('❌ Erro ao salvar', 'error');
                 return;
             }
@@ -246,8 +244,8 @@
         }
         
         window.rawData = (data || []).map(function(item) {
-            var dataExibicao = item.data || item.data_hora;
-            if (dataExibicao && dataExibicao.includes('-') && !dataExibicao.includes('/')) {
+            var dataExibicao = item.data_hora || '';
+            if (dataExibicao && !dataExibicao.includes('/') && dataExibicao.includes('-')) {
                 var partes = dataExibicao.split('-');
                 dataExibicao = partes[2] + '/' + partes[1] + '/' + partes[0];
             }
