@@ -1,4 +1,4 @@
-// Supabase Client - Versão estável
+// Supabase Client - Versão estável com parcelas corretas
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -101,8 +101,8 @@
                         </div>
                         <div id="parcelasGroup" style="margin-bottom: 15px; display: none;">
                             <label>Número de Parcelas</label>
-                            <input type="number" id="txnParcelas" value="2" min="2" max="24" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                            <small style="color: #64748b;">As próximas parcelas serão geradas automaticamente</small>
+                            <input type="number" id="txnParcelas" value="2" min="2" max="12" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                            <small style="color: #64748b;">As parcelas serão geradas automaticamente</small>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label>Descrição</label>
@@ -163,7 +163,6 @@
         var quem = usuarioAtual;
         
         var partes = dataSelecionada.split('-');
-        var dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
         var mesReferencia = parseInt(partes[1]);
         
         var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
@@ -172,7 +171,6 @@
         
         if (metodo === 'Crédito parcelado' && parcelas > 1) {
             var valorParcela = valor / parcelas;
-            var total = 0;
             
             for (var i = 0; i < parcelas; i++) {
                 var dataParcela = new Date(dataSelecionada);
@@ -182,13 +180,14 @@
                 var mesParcela = dataParcela.getMonth() + 1;
                 var diaParcela = dataParcela.getDate();
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
+                var dataParcelaStr = anoParcela + '-' + String(mesParcela).padStart(2,'0') + '-' + String(diaParcela).padStart(2,'0');
                 
                 var dadosParcela = {
                     valor: valorParcela,
                     tipo: tipo,
                     categoria: categoria,
                     subcategoria: '',
-                    metodo: metodo + ' (' + (i + 1) + '/' + parcelas + ')',
+                    metodo: metodo,
                     parcelas: parcelas,
                     quem: quem,
                     descricao: descricao + (descricao ? ' - parcela ' + (i + 1) + '/' + parcelas : 'parcela ' + (i + 1) + '/' + parcelas),
@@ -196,15 +195,14 @@
                     mes_referencia: mesParcela,
                     dia_semana: diaSemanaParcela,
                     hora: '00:00:00',
-                    data_hora: dataParcela.toISOString()
+                    data_hora: dataParcelaStr
                 };
                 
                 var { error } = await supabaseInstance.from('lancamentos').insert([dadosParcela]);
                 if (error) console.error('Erro parcela:', error);
-                total += valorParcela;
             }
             
-            if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2) + ' registrada!', 'success');
+            if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2), 'success');
         } else {
             var dados = {
                 valor: valor,
@@ -219,7 +217,7 @@
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
                 hora: '00:00:00',
-                data_hora: new Date(dataSelecionada).toISOString()
+                data_hora: dataSelecionada
             };
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
@@ -247,8 +245,11 @@
         }
         
         window.rawData = (data || []).map(function(item) {
-            var dataObj = new Date(item.data_hora);
-            var dataFormatada = dataObj.toLocaleDateString('pt-BR');
+            var dataFormatada = item.data_hora;
+            if (dataFormatada && dataFormatada.includes('-')) {
+                var partes = dataFormatada.split('-');
+                dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
+            }
             
             return {
                 id: item.id,
@@ -286,6 +287,7 @@
         supabaseInstance
             .channel('lancamentos')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lancamentos' }, function() {
+                console.log('Mudança detectada');
                 carregarDados();
             })
             .subscribe();
