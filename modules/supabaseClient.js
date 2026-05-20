@@ -1,4 +1,4 @@
-// Supabase Client - Apenas data, sem hora
+// Supabase Client - Versão estável
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -124,7 +124,6 @@
         document.body.appendChild(modal);
         modal.style.display = 'flex';
         
-        // Data atual no campo
         var hoje = new Date().toISOString().split('T')[0];
         document.getElementById('txnData').value = hoje;
         
@@ -163,11 +162,9 @@
         var tipo = 'Despesa';
         var quem = usuarioAtual;
         
-        // Formatar data para DD/MM/YYYY
         var partes = dataSelecionada.split('-');
         var dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
         var mesReferencia = parseInt(partes[1]);
-        var anoReferencia = parseInt(partes[0]);
         
         var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
         var dataObj = new Date(dataSelecionada);
@@ -175,6 +172,7 @@
         
         if (metodo === 'Crédito parcelado' && parcelas > 1) {
             var valorParcela = valor / parcelas;
+            var total = 0;
             
             for (var i = 0; i < parcelas; i++) {
                 var dataParcela = new Date(dataSelecionada);
@@ -183,7 +181,6 @@
                 var anoParcela = dataParcela.getFullYear();
                 var mesParcela = dataParcela.getMonth() + 1;
                 var diaParcela = dataParcela.getDate();
-                var dataParcelaFormatada = diaParcela + '/' + mesParcela + '/' + anoParcela;
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
                 
                 var dadosParcela = {
@@ -194,7 +191,7 @@
                     metodo: metodo + ' (' + (i + 1) + '/' + parcelas + ')',
                     parcelas: parcelas,
                     quem: quem,
-                    descricao: descricao + ' (parcela ' + (i + 1) + '/' + parcelas + ')',
+                    descricao: descricao + (descricao ? ' - parcela ' + (i + 1) + '/' + parcelas : 'parcela ' + (i + 1) + '/' + parcelas),
                     tipo_gasto: tipoGasto,
                     mes_referencia: mesParcela,
                     dia_semana: diaSemanaParcela,
@@ -202,7 +199,9 @@
                     data_hora: dataParcela.toISOString()
                 };
                 
-                await supabaseInstance.from('lancamentos').insert([dadosParcela]);
+                var { error } = await supabaseInstance.from('lancamentos').insert([dadosParcela]);
+                if (error) console.error('Erro parcela:', error);
+                total += valorParcela;
             }
             
             if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2) + ' registrada!', 'success');
@@ -236,8 +235,6 @@
     
     async function carregarDados() {
         if (!supabaseInstance) return;
-        
-        console.log('Carregando dados do Supabase...');
         
         var { data, error } = await supabaseInstance
             .from('lancamentos')
@@ -281,7 +278,7 @@
         var updateEl = document.getElementById('lastUpdate');
         if (updateEl) updateEl.innerText = 'Última atualização: ' + new Date().toLocaleString();
         
-        console.log('Dados carregados:', window.rawData.length, 'registros');
+        console.log('Dados carregados:', window.rawData.length);
     }
     
     function configurarRealtime() {
@@ -289,7 +286,6 @@
         supabaseInstance
             .channel('lancamentos')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lancamentos' }, function() {
-                console.log('Mudança detectada em tempo real');
                 carregarDados();
             })
             .subscribe();
