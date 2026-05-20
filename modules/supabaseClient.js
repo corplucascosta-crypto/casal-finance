@@ -1,4 +1,4 @@
-// Supabase Client - Com horário corrigido
+// Supabase Client - Apenas data, sem hora
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -68,6 +68,10 @@
                 <div class="modal-body">
                     <form id="transactionForm">
                         <div style="margin-bottom: 15px;">
+                            <label>Data</label>
+                            <input type="date" id="txnData" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+                        <div style="margin-bottom: 15px;">
                             <label>Valor (R$)</label>
                             <input type="number" step="0.01" id="txnValor" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
                         </div>
@@ -120,6 +124,10 @@
         document.body.appendChild(modal);
         modal.style.display = 'flex';
         
+        // Data atual no campo
+        var hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('txnData').value = hoje;
+        
         var metodoSelect = document.getElementById('txnMetodo');
         var parcelasGroup = document.getElementById('parcelasGroup');
         
@@ -144,6 +152,7 @@
     }
     
     async function salvarLancamento() {
+        var dataSelecionada = document.getElementById('txnData').value;
         var valor = parseFloat(document.getElementById('txnValor').value);
         var categoria = document.getElementById('txnCategoria').value;
         var metodo = document.getElementById('txnMetodo').value;
@@ -154,27 +163,28 @@
         var tipo = 'Despesa';
         var quem = usuarioAtual;
         
-        var agora = new Date();
-        // Ajustar para fuso horário local (Brasil)
-        var offsetBrasil = -3 * 60; // -3 horas em minutos
-        var dataLocal = new Date(agora.getTime() + (agora.getTimezoneOffset() + offsetBrasil) * 60000);
+        // Formatar data para DD/MM/YYYY
+        var partes = dataSelecionada.split('-');
+        var dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
+        var mesReferencia = parseInt(partes[1]);
+        var anoReferencia = parseInt(partes[0]);
         
-        var mesReferencia = dataLocal.getMonth() + 1;
         var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-        var diaSemana = diasSemana[dataLocal.getDay()];
-        var hora = dataLocal.toLocaleTimeString('pt-BR');
-        var dataFormatada = dataLocal.toLocaleDateString('pt-BR') + ' ' + hora;
+        var dataObj = new Date(dataSelecionada);
+        var diaSemana = diasSemana[dataObj.getDay()];
         
         if (metodo === 'Crédito parcelado' && parcelas > 1) {
             var valorParcela = valor / parcelas;
             
             for (var i = 0; i < parcelas; i++) {
-                var dataParcela = new Date(dataLocal);
-                dataParcela.setMonth(dataLocal.getMonth() + i);
+                var dataParcela = new Date(dataSelecionada);
+                dataParcela.setMonth(dataObj.getMonth() + i);
                 
+                var anoParcela = dataParcela.getFullYear();
                 var mesParcela = dataParcela.getMonth() + 1;
+                var diaParcela = dataParcela.getDate();
+                var dataParcelaFormatada = diaParcela + '/' + mesParcela + '/' + anoParcela;
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
-                var horaParcela = dataParcela.toLocaleTimeString('pt-BR');
                 
                 var dadosParcela = {
                     valor: valorParcela,
@@ -188,7 +198,7 @@
                     tipo_gasto: tipoGasto,
                     mes_referencia: mesParcela,
                     dia_semana: diaSemanaParcela,
-                    hora: horaParcela,
+                    hora: '00:00:00',
                     data_hora: dataParcela.toISOString()
                 };
                 
@@ -209,8 +219,8 @@
                 tipo_gasto: tipoGasto,
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
-                hora: hora,
-                data_hora: dataLocal.toISOString()
+                hora: '00:00:00',
+                data_hora: new Date(dataSelecionada).toISOString()
             };
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
@@ -241,12 +251,12 @@
         
         window.rawData = (data || []).map(function(item) {
             var dataObj = new Date(item.data_hora);
-            var dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR');
+            var dataFormatada = dataObj.toLocaleDateString('pt-BR');
             
             return {
                 id: item.id,
                 dataRaw: dataFormatada,
-                data: dataFormatada.split(' ')[0],
+                data: dataFormatada,
                 valor: item.valor,
                 tipo: item.tipo,
                 categoria: item.categoria,
