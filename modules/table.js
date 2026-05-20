@@ -49,8 +49,7 @@ function renderTable() {
 }
 
 async function excluirLancamento(id) {
-    console.log('=== INICIANDO EXCLUSÃO ===');
-    console.log('ID do lançamento (número):', id);
+    console.log('=== EXCLUINDO LANÇAMENTO ID:', id);
     
     if (!window.supabaseClient || !window.supabaseClient.supabase) {
         console.error('Supabase não disponível');
@@ -61,7 +60,7 @@ async function excluirLancamento(id) {
     var supabase = window.supabaseClient.supabase;
     
     try {
-        // Executar a exclusão diretamente
+        // Executar a exclusão
         var { error } = await supabase
             .from('lancamentos')
             .delete()
@@ -69,80 +68,42 @@ async function excluirLancamento(id) {
         
         if (error) {
             console.error('Erro na exclusão:', error);
-            if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + error.message, 'error');
+            if (window.showNotification) window.showNotification('❌ Erro ao excluir', 'error');
             return;
         }
         
-        console.log('Exclusão realizada com sucesso!');
+        console.log('Exclusão realizada! ID:', id);
         
-        // Mostrar notificação
-        if (window.showNotification) {
-            window.showNotification('✅ Lançamento excluído!', 'success');
+        // Remover localmente da lista para atualização imediata
+        var indexRemover = -1;
+        for (var i = 0; i < window.filteredData.length; i++) {
+            if (window.filteredData[i].id === id) {
+                indexRemover = i;
+                break;
+            }
         }
         
-        // Recarregar os dados
-        await carregarDadosDoSupabase();
+        if (indexRemover !== -1) {
+            window.filteredData.splice(indexRemover, 1);
+            window.rawData.splice(indexRemover, 1);
+        }
+        
+        // Atualizar a tabela imediatamente
+        renderTable();
+        
+        // Atualizar dashboard e gráficos
+        if (typeof renderDashboard === 'function') renderDashboard();
+        if (typeof renderForecast === 'function') renderForecast();
+        if (typeof renderDailyChart === 'function') renderDailyChart();
+        if (typeof renderAnalytics === 'function') renderAnalytics();
+        if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+        
+        if (window.showNotification) window.showNotification('✅ Lançamento excluído!', 'success');
         
     } catch (err) {
-        console.error('Erro inesperado:', err);
+        console.error('Erro:', err);
         if (window.showNotification) window.showNotification('❌ Erro ao excluir', 'error');
     }
-}
-
-async function carregarDadosDoSupabase() {
-    console.log('Recarregando dados do Supabase...');
-    
-    if (!window.supabaseClient || !window.supabaseClient.supabase) {
-        console.error('Supabase não disponível');
-        return;
-    }
-    
-    var supabase = window.supabaseClient.supabase;
-    
-    var { data, error } = await supabase
-        .from('lancamentos')
-        .select('*')
-        .order('data_hora', { ascending: false });
-    
-    if (error) {
-        console.error('Erro ao recarregar:', error);
-        return;
-    }
-    
-    console.log('Dados recebidos do Supabase:', data ? data.length : 0);
-    
-    // Atualizar os dados globais
-    window.rawData = (data || []).map(function(item) {
-        var dataObj = new Date(item.data_hora);
-        var dataFormatada = dataObj.toLocaleDateString('pt-BR');
-        
-        return {
-            id: item.id,
-            dataRaw: dataFormatada,
-            data: dataFormatada,
-            valor: item.valor,
-            tipo: item.tipo,
-            categoria: item.categoria,
-            subcategoria: item.subcategoria || '',
-            metodo: item.metodo || '',
-            parcelas: item.parcelas || 1,
-            quem: item.quem,
-            descricao: item.descricao || 'Sem descrição',
-            tipoGasto: item.tipo_gasto || 'Essencial'
-        };
-    });
-    
-    window.filteredData = [...window.rawData];
-    
-    // Re-renderizar todos os componentes
-    if (typeof renderDashboard === 'function') renderDashboard();
-    if (typeof renderTable === 'function') renderTable();
-    if (typeof renderForecast === 'function') renderForecast();
-    if (typeof renderDailyChart === 'function') renderDailyChart();
-    if (typeof renderAnalytics === 'function') renderAnalytics();
-    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
-    
-    console.log('Interface atualizada com', window.rawData.length, 'registros');
 }
 
 window.renderTable = renderTable;
