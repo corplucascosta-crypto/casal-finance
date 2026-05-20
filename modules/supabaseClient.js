@@ -3,17 +3,28 @@
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
     
-    // Configuração - ATUALIZADO COM SUAS CREDENCIAIS
+    // Configuração - SUAS CREDENCIAIS
     var SUPABASE_URL = 'https://bnxlpdwcismmxsakhtnp.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJueGxwZHdjaXNtbXhzYWtodG5wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODE3OTksImV4cCI6MjA5NDg1Nzc5OX0.mEG_5q26fYtaf_2-6NTLnOWX7E03G0L9V5PvGv-Krp8';
     
     var supabase = null;
     
     function initSupabase() {
+        console.log('Inicializando Supabase...');
         carregarSupabaseLib();
     }
     
     function carregarSupabaseLib() {
+        // Verificar se já existe
+        if (window.supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase já carregado!');
+            carregarDados();
+            adicionarBotaoNovoLancamento();
+            configurarRealtime();
+            return;
+        }
+        
         var script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
         script.onload = function() {
@@ -23,22 +34,28 @@
             adicionarBotaoNovoLancamento();
             configurarRealtime();
         };
+        script.onerror = function() {
+            console.error('Erro ao carregar Supabase');
+        };
         document.head.appendChild(script);
     }
     
     function adicionarBotaoNovoLancamento() {
-        var header = document.querySelector('.main-content header');
-        if (!header) return;
-        
-        // Verificar se botão já existe
-        if (document.getElementById('addTransactionBtn')) return;
-        
-        var btnContainer = document.createElement('div');
-        btnContainer.className = 'add-transaction-btn-container';
-        btnContainer.innerHTML = '<button id="addTransactionBtn" class="add-transaction-btn">➕ Novo Lançamento</button>';
-        header.appendChild(btnContainer);
-        
-        document.getElementById('addTransactionBtn').addEventListener('click', abrirModalLancamento);
+        // Aguardar o header existir
+        var checkHeader = setInterval(function() {
+            var header = document.querySelector('.main-content header');
+            if (header && !document.getElementById('addTransactionBtn')) {
+                clearInterval(checkHeader);
+                
+                var btnContainer = document.createElement('div');
+                btnContainer.className = 'add-transaction-btn-container';
+                btnContainer.innerHTML = '<button id="addTransactionBtn" class="add-transaction-btn">➕ Novo Lançamento</button>';
+                header.appendChild(btnContainer);
+                
+                document.getElementById('addTransactionBtn').addEventListener('click', abrirModalLancamento);
+                console.log('Botão de lançamento adicionado');
+            }
+        }, 500);
     }
     
     function abrirModalLancamento() {
@@ -70,14 +87,18 @@
         document.body.appendChild(modal);
         modal.style.display = 'flex';
         
-        document.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
+        var closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) closeBtn.addEventListener('click', function() { modal.remove(); });
         modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
         
-        document.getElementById('transactionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            salvarLancamento();
-            modal.remove();
-        });
+        var form = document.getElementById('transactionForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                salvarLancamento();
+                modal.remove();
+            });
+        }
     }
     
     async function salvarLancamento() {
@@ -112,30 +133,38 @@
             data_hora: agora.toISOString()
         };
         
+        console.log('Enviando dados:', dados);
+        
         try {
             var { data, error } = await supabase
                 .from('lancamentos')
                 .insert([dados]);
             
-            if (error) throw error;
-            
-            if (window.showNotification) {
-                window.showNotification('✅ Lançamento salvo com sucesso!', 'success');
+            if (error) {
+                console.error('Erro Supabase:', error);
+                if (window.showNotification) window.showNotification('❌ Erro: ' + error.message, 'error');
+                return;
             }
             
-            // Recarregar dados automaticamente
+            console.log('Sucesso:', data);
+            if (window.showNotification) window.showNotification('✅ Lançamento salvo com sucesso!', 'success');
+            
+            // Recarregar dados
             setTimeout(function() { carregarDados(); }, 500);
             
         } catch (error) {
             console.error('Erro ao salvar:', error);
-            if (window.showNotification) {
-                window.showNotification('❌ Erro ao salvar. Tente novamente.', 'error');
-            }
+            if (window.showNotification) window.showNotification('❌ Erro ao salvar. Tente novamente.', 'error');
         }
     }
     
     async function carregarDados() {
-        if (!supabase) return;
+        if (!supabase) {
+            console.log('Aguardando Supabase...');
+            return;
+        }
+        
+        console.log('Carregando dados do Supabase...');
         
         var { data, error } = await supabase
             .from('lancamentos')
@@ -146,6 +175,8 @@
             console.error('Erro ao carregar:', error);
             return;
         }
+        
+        console.log('Dados recebidos:', data.length);
         
         // Converter dados do Supabase para o formato do app
         window.rawData = data.map(function(item) {
@@ -175,20 +206,30 @@
         if (typeof renderForecast === 'function') renderForecast();
         if (typeof renderDailyChart === 'function') renderDailyChart();
         if (typeof renderAnalytics === 'function') renderAnalytics();
+        if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+        
+        // Atualizar timestamp
+        var now = new Date();
+        var updateEl = document.getElementById('lastUpdate');
+        if (updateEl) updateEl.innerText = 'Última atualização: ' + now.toLocaleString();
         
         console.log('Dados carregados do Supabase:', window.rawData.length);
     }
     
     function configurarRealtime() {
-        // Escutar mudanças em tempo real
+        if (!supabase) return;
+        
         supabase
             .channel('lancamentos')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lancamentos' }, function(payload) {
-                console.log('Mudança detectada:', payload);
+                console.log('Mudança detectada em tempo real:', payload.eventType);
                 carregarDados();
             })
             .subscribe();
     }
+    
+    // Expor funções globalmente
+    window.carregarDadosSupabase = carregarDados;
     
     document.addEventListener('DOMContentLoaded', initSupabase);
 })();
