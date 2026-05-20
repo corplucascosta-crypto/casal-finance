@@ -56,7 +56,7 @@ async function excluirLancamento(id) {
     
     var supabase = window.supabaseClient.supabase;
     
-    console.log('Excluindo ID:', id);
+    console.log('Excluindo lançamento ID:', id);
     
     var { error } = await supabase
         .from('lancamentos')
@@ -64,25 +64,23 @@ async function excluirLancamento(id) {
         .eq('id', parseInt(id));
     
     if (error) {
-        console.error('Erro:', error);
-        if (window.showNotification) window.showNotification('❌ Erro ao excluir', 'error');
+        console.error('Erro ao excluir:', error);
+        if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + error.message, 'error');
         return;
     }
     
     if (window.showNotification) window.showNotification('✅ Lançamento excluído!', 'success');
     
-    // Forçar recarregamento dos dados
+    // Forçar recarregamento dos dados pela função global
     setTimeout(function() {
-        if (typeof carregarDadosSupabase === 'function') {
-            carregarDadosSupabase();
-        } else if (window.carregarDadosSupabase) {
+        if (typeof window.carregarDadosSupabase === 'function') {
+            console.log('Chamando carregarDadosSupabase...');
             window.carregarDadosSupabase();
         } else {
-            // Fallback: recarregar a página
+            console.log('carregarDadosSupabase não encontrada, recarregando página...');
             location.reload();
         }
     }, 500);
 }
 
 window.renderTable = renderTable;
-window.excluirLancamento = excluirLancamento;

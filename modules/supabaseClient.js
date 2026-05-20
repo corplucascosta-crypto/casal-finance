@@ -33,6 +33,13 @@
     
     function finalizarInicializacao() {
         window.supabaseClient = { supabase: supabaseInstance, isReady: true };
+        
+        // Expor função global para recarregar dados
+        window.carregarDadosSupabase = function() {
+            console.log('Recarregando dados via função global...');
+            carregarDados();
+        };
+        
         window.dispatchEvent(new Event('supabaseReady'));
         carregarDados();
         adicionarBotaoNovoLancamento();
@@ -123,18 +130,24 @@
         var metodoSelect = document.getElementById('txnMetodo');
         var parcelasGroup = document.getElementById('parcelasGroup');
         
-        metodoSelect.addEventListener('change', function() {
-            parcelasGroup.style.display = this.value === 'Crédito parcelado' ? 'block' : 'none';
-        });
+        if (metodoSelect && parcelasGroup) {
+            metodoSelect.addEventListener('change', function() {
+                parcelasGroup.style.display = this.value === 'Crédito parcelado' ? 'block' : 'none';
+            });
+        }
         
-        modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
+        var closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) closeBtn.addEventListener('click', function() { modal.remove(); });
         modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
         
-        document.getElementById('transactionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            salvarLancamento();
-            modal.remove();
-        });
+        var form = document.getElementById('transactionForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                salvarLancamento();
+                modal.remove();
+            });
+        }
     }
     
     async function salvarLancamento() {
@@ -216,6 +229,8 @@
     async function carregarDados() {
         if (!supabaseInstance) return;
         
+        console.log('Carregando dados do Supabase...');
+        
         var { data, error } = await supabaseInstance
             .from('lancamentos')
             .select('*')
@@ -226,13 +241,12 @@
             return;
         }
         
-        // Manter os dados com ID do Supabase
         window.rawData = (data || []).map(function(item) {
             var dataObj = new Date(item.data_hora);
             var dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR');
             
             return {
-                id: item.id,  // ID do Supabase
+                id: item.id,
                 dataRaw: dataFormatada,
                 data: dataFormatada.split(' ')[0],
                 valor: item.valor,
@@ -258,15 +272,16 @@
         
         var updateEl = document.getElementById('lastUpdate');
         if (updateEl) updateEl.innerText = 'Última atualização: ' + new Date().toLocaleString();
+        
+        console.log('Dados carregados:', window.rawData.length, 'registros');
     }
-    
-    window.carregarDadosSupabase = carregarDados;
     
     function configurarRealtime() {
         if (!supabaseInstance) return;
         supabaseInstance
             .channel('lancamentos')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lancamentos' }, function() {
+                console.log('Mudança detectada em tempo real');
                 carregarDados();
             })
             .subscribe();
@@ -274,6 +289,3 @@
     
     document.addEventListener('DOMContentLoaded', initSupabase);
 })();
-
-// Expor função global para recarregar dados
-window.carregarDadosSupabase = carregarDados;
