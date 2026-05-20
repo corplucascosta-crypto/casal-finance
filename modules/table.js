@@ -71,16 +71,53 @@ async function excluirLancamento(id) {
     
     if (window.showNotification) window.showNotification('✅ Lançamento excluído!', 'success');
     
-    // Forçar recarregamento dos dados pela função global
-    setTimeout(function() {
-        if (typeof window.carregarDadosSupabase === 'function') {
-            console.log('Chamando carregarDadosSupabase...');
-            window.carregarDadosSupabase();
-        } else {
-            console.log('carregarDadosSupabase não encontrada, recarregando página...');
-            location.reload();
-        }
-    }, 500);
+    // Recarregar os dados diretamente do Supabase
+    console.log('Recarregando dados do Supabase...');
+    
+    var { data, error: loadError } = await supabase
+        .from('lancamentos')
+        .select('*')
+        .order('data_hora', { ascending: false });
+    
+    if (loadError) {
+        console.error('Erro ao recarregar:', loadError);
+        return;
+    }
+    
+    // Atualizar os dados globais
+    window.rawData = (data || []).map(function(item) {
+        var dataObj = new Date(item.data_hora);
+        var dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR');
+        
+        return {
+            id: item.id,
+            dataRaw: dataFormatada,
+            data: dataFormatada.split(' ')[0],
+            valor: item.valor,
+            tipo: item.tipo,
+            categoria: item.categoria,
+            subcategoria: item.subcategoria || '',
+            metodo: item.metodo || '',
+            parcelas: item.parcelas || 1,
+            quem: item.quem,
+            descricao: item.descricao || 'Sem descrição',
+            tipoGasto: item.tipo_gasto || 'Essencial'
+        };
+    });
+    
+    window.filteredData = [...window.rawData];
+    
+    // Re-renderizar a tabela
+    renderTable();
+    
+    // Atualizar outros componentes
+    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof renderForecast === 'function') renderForecast();
+    if (typeof renderDailyChart === 'function') renderDailyChart();
+    if (typeof renderAnalytics === 'function') renderAnalytics();
+    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+    
+    console.log('Dados recarregados:', window.rawData.length, 'registros');
 }
 
 window.renderTable = renderTable;
