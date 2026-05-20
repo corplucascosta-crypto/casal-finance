@@ -233,3 +233,12 @@
     
     document.addEventListener('DOMContentLoaded', initSupabase);
 })();
+
+// Expor Supabase globalmente para outros módulos
+window.supabaseClient = {
+    supabase: supabase,
+    isReady: true
+};
+
+// Disparar evento
+window.dispatchEvent(new Event('supabaseReady'));
