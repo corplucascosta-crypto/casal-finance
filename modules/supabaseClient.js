@@ -1,4 +1,4 @@
-// Supabase Client - Com lançamentos parcelados e usuário automático
+// Supabase Client - Com horário corrigido
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -33,13 +33,6 @@
     
     function finalizarInicializacao() {
         window.supabaseClient = { supabase: supabaseInstance, isReady: true };
-        
-        // Expor função global para recarregar dados
-        window.carregarDadosSupabase = function() {
-            console.log('Recarregando dados via função global...');
-            carregarDados();
-        };
-        
         window.dispatchEvent(new Event('supabaseReady'));
         carregarDados();
         adicionarBotaoNovoLancamento();
@@ -54,7 +47,7 @@
                 
                 var btnContainer = document.createElement('div');
                 btnContainer.className = 'add-transaction-btn-container';
-                btnContainer.innerHTML = '<button id="addTransactionBtn" class="add-transaction-btn">➕ Novo Lançamento</button>';
+                btnContainer.innerHTML = '<button id="addTransactionBtn" class="add-transaction-btn">➕ Nova Despesa</button>';
                 header.appendChild(btnContainer);
                 
                 document.getElementById('addTransactionBtn').addEventListener('click', abrirModalLancamento);
@@ -162,17 +155,22 @@
         var quem = usuarioAtual;
         
         var agora = new Date();
-        var mesReferencia = agora.getMonth() + 1;
+        // Ajustar para fuso horário local (Brasil)
+        var offsetBrasil = -3 * 60; // -3 horas em minutos
+        var dataLocal = new Date(agora.getTime() + (agora.getTimezoneOffset() + offsetBrasil) * 60000);
+        
+        var mesReferencia = dataLocal.getMonth() + 1;
         var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-        var diaSemana = diasSemana[agora.getDay()];
-        var hora = agora.toLocaleTimeString('pt-BR');
+        var diaSemana = diasSemana[dataLocal.getDay()];
+        var hora = dataLocal.toLocaleTimeString('pt-BR');
+        var dataFormatada = dataLocal.toLocaleDateString('pt-BR') + ' ' + hora;
         
         if (metodo === 'Crédito parcelado' && parcelas > 1) {
             var valorParcela = valor / parcelas;
             
             for (var i = 0; i < parcelas; i++) {
-                var dataParcela = new Date(agora);
-                dataParcela.setMonth(agora.getMonth() + i);
+                var dataParcela = new Date(dataLocal);
+                dataParcela.setMonth(dataLocal.getMonth() + i);
                 
                 var mesParcela = dataParcela.getMonth() + 1;
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
@@ -212,7 +210,7 @@
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
                 hora: hora,
-                data_hora: agora.toISOString()
+                data_hora: dataLocal.toISOString()
             };
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);

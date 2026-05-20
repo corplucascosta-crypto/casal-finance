@@ -7,7 +7,7 @@ function renderTable() {
     }
     
     if (!window.filteredData || window.filteredData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8">Nenhum lançamento encontrado. </td</tr>';
+        tbody.innerHTML = '<table><td colspan="8">Nenhum lançamento encontrado. </td></tr>';
         return;
     }
     
@@ -49,75 +49,44 @@ function renderTable() {
 }
 
 async function excluirLancamento(id) {
-    if (!window.supabaseClient || !window.supabaseClient.supabase) {
-        if (window.showNotification) window.showNotification('❌ Supabase não disponível', 'error');
+    // Tentar obter o Supabase de diferentes formas
+    var supabase = null;
+    
+    if (window.supabaseClient && window.supabaseClient.supabase) {
+        supabase = window.supabaseClient.supabase;
+    } else if (window.supabase) {
+        supabase = window.supabase;
+    } else {
+        console.error('Supabase não encontrado');
+        if (window.showNotification) window.showNotification('❌ Erro: Sistema não disponível', 'error');
         return;
     }
-    
-    var supabase = window.supabaseClient.supabase;
     
     console.log('Excluindo lançamento ID:', id);
     
-    var { error } = await supabase
-        .from('lancamentos')
-        .delete()
-        .eq('id', parseInt(id));
-    
-    if (error) {
-        console.error('Erro ao excluir:', error);
-        if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + error.message, 'error');
-        return;
-    }
-    
-    if (window.showNotification) window.showNotification('✅ Lançamento excluído!', 'success');
-    
-    // Recarregar os dados diretamente do Supabase
-    console.log('Recarregando dados do Supabase...');
-    
-    var { data, error: loadError } = await supabase
-        .from('lancamentos')
-        .select('*')
-        .order('data_hora', { ascending: false });
-    
-    if (loadError) {
-        console.error('Erro ao recarregar:', loadError);
-        return;
-    }
-    
-    // Atualizar os dados globais
-    window.rawData = (data || []).map(function(item) {
-        var dataObj = new Date(item.data_hora);
-        var dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR');
+    try {
+        var { error } = await supabase
+            .from('lancamentos')
+            .delete()
+            .eq('id', parseInt(id));
         
-        return {
-            id: item.id,
-            dataRaw: dataFormatada,
-            data: dataFormatada.split(' ')[0],
-            valor: item.valor,
-            tipo: item.tipo,
-            categoria: item.categoria,
-            subcategoria: item.subcategoria || '',
-            metodo: item.metodo || '',
-            parcelas: item.parcelas || 1,
-            quem: item.quem,
-            descricao: item.descricao || 'Sem descrição',
-            tipoGasto: item.tipo_gasto || 'Essencial'
-        };
-    });
-    
-    window.filteredData = [...window.rawData];
-    
-    // Re-renderizar a tabela
-    renderTable();
-    
-    // Atualizar outros componentes
-    if (typeof renderDashboard === 'function') renderDashboard();
-    if (typeof renderForecast === 'function') renderForecast();
-    if (typeof renderDailyChart === 'function') renderDailyChart();
-    if (typeof renderAnalytics === 'function') renderAnalytics();
-    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
-    
-    console.log('Dados recarregados:', window.rawData.length, 'registros');
+        if (error) {
+            console.error('Erro ao excluir:', error);
+            if (window.showNotification) window.showNotification('❌ Erro ao excluir: ' + error.message, 'error');
+            return;
+        }
+        
+        if (window.showNotification) window.showNotification('✅ Lançamento excluído! Recarregando...', 'success');
+        
+        // Recarregar a página para garantir que os dados sejam atualizados
+        setTimeout(function() {
+            location.reload();
+        }, 1000);
+        
+    } catch (err) {
+        console.error('Erro:', err);
+        if (window.showNotification) window.showNotification('❌ Erro ao excluir', 'error');
+    }
 }
 
 window.renderTable = renderTable;
