@@ -1,4 +1,4 @@
-// Supabase Client - Data no formato ISO
+// Supabase Client - Versão simplificada
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -183,7 +183,6 @@
                 var diaParcela = dataParcela.getDate();
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
                 var dataParcelaISO = anoParcela + '-' + String(mesParcela).padStart(2,'0') + '-' + String(diaParcela).padStart(2,'0');
-                var dataParcelaExibicao = diaParcela + '/' + mesParcela + '/' + anoParcela;
                 
                 var dadosParcela = {
                     valor: valorParcela,
@@ -200,7 +199,8 @@
                     data_hora: dataParcelaISO
                 };
                 
-                await supabaseInstance.from('lancamentos').insert([dadosParcela]);
+                var { error } = await supabaseInstance.from('lancamentos').insert([dadosParcela]);
+                if (error) console.error('Erro parcela:', error);
             }
             
             if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2), 'success');
@@ -217,13 +217,15 @@
                 tipo_gasto: tipoGasto,
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
-                data_hora: dataISO
+                data_hora: dataExibicao
             };
+            
+            console.log('Enviando dados:', dados);
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
             if (error) {
                 console.error('Erro ao salvar:', error);
-                if (window.showNotification) window.showNotification('❌ Erro ao salvar: ' + (error.message || 'Verifique os dados'), 'error');
+                if (window.showNotification) window.showNotification('❌ Erro ao salvar', 'error');
                 return;
             }
             if (window.showNotification) window.showNotification('✅ Despesa salva!', 'success');
@@ -238,7 +240,7 @@
         var { data, error } = await supabaseInstance
             .from('lancamentos')
             .select('*')
-            .order('data_hora', { ascending: false });
+            .order('id', { ascending: false });
         
         if (error) {
             console.error('Erro ao carregar:', error);
@@ -246,17 +248,10 @@
         }
         
         window.rawData = (data || []).map(function(item) {
-            // Formatar data para exibição (DD/MM/YYYY)
-            var dataExibicao = item.data_hora || '';
-            if (dataExibicao && dataExibicao.includes('-')) {
-                var partes = dataExibicao.split('-');
-                dataExibicao = partes[2] + '/' + partes[1] + '/' + partes[0];
-            }
-            
             return {
                 id: item.id,
-                dataRaw: dataExibicao,
-                data: dataExibicao,
+                dataRaw: item.data_hora,
+                data: item.data_hora,
                 valor: item.valor,
                 tipo: item.tipo,
                 categoria: item.categoria,
