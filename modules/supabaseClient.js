@@ -120,7 +120,6 @@
         document.body.appendChild(modal);
         modal.style.display = 'flex';
         
-        // Mostrar/esconder campo de parcelas
         var metodoSelect = document.getElementById('txnMetodo');
         var parcelasGroup = document.getElementById('parcelasGroup');
         
@@ -128,11 +127,9 @@
             parcelasGroup.style.display = this.value === 'Crédito parcelado' ? 'block' : 'none';
         });
         
-        // Fechar modal
         modal.querySelector('.modal-close').addEventListener('click', function() { modal.remove(); });
         modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
         
-        // Submeter formulário
         document.getElementById('transactionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             salvarLancamento();
@@ -148,7 +145,6 @@
         var descricao = document.getElementById('txnDescricao').value || '';
         var tipoGasto = document.getElementById('txnTipoGasto').value;
         
-        // Tipo fixo como Despesa
         var tipo = 'Despesa';
         var quem = usuarioAtual;
         
@@ -158,7 +154,6 @@
         var diaSemana = diasSemana[agora.getDay()];
         var hora = agora.toLocaleTimeString('pt-BR');
         
-        // Se for parcelado, gerar todas as parcelas
         if (metodo === 'Crédito parcelado' && parcelas > 1) {
             var valorParcela = valor / parcelas;
             
@@ -166,7 +161,6 @@
                 var dataParcela = new Date(agora);
                 dataParcela.setMonth(agora.getMonth() + i);
                 
-                var dataFormatada = dataParcela.toLocaleDateString('pt-BR') + ' ' + dataParcela.toLocaleTimeString('pt-BR');
                 var mesParcela = dataParcela.getMonth() + 1;
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
                 var horaParcela = dataParcela.toLocaleTimeString('pt-BR');
@@ -187,16 +181,11 @@
                     data_hora: dataParcela.toISOString()
                 };
                 
-                var { error } = await supabaseInstance
-                    .from('lancamentos')
-                    .insert([dadosParcela]);
-                
-                if (error) console.error('Erro ao salvar parcela:', error);
+                await supabaseInstance.from('lancamentos').insert([dadosParcela]);
             }
             
             if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2) + ' registrada!', 'success');
         } else {
-            // Lançamento normal
             var dados = {
                 valor: valor,
                 tipo: tipo,
@@ -213,16 +202,11 @@
                 data_hora: agora.toISOString()
             };
             
-            var { error } = await supabaseInstance
-                .from('lancamentos')
-                .insert([dados]);
-            
+            var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
             if (error) {
-                console.error('Erro:', error);
                 if (window.showNotification) window.showNotification('❌ Erro ao salvar', 'error');
                 return;
             }
-            
             if (window.showNotification) window.showNotification('✅ Despesa salva!', 'success');
         }
         
@@ -242,11 +226,13 @@
             return;
         }
         
+        // Manter os dados com ID do Supabase
         window.rawData = (data || []).map(function(item) {
             var dataObj = new Date(item.data_hora);
             var dataFormatada = dataObj.toLocaleDateString('pt-BR') + ' ' + dataObj.toLocaleTimeString('pt-BR');
             
             return {
+                id: item.id,  // ID do Supabase
                 dataRaw: dataFormatada,
                 data: dataFormatada.split(' ')[0],
                 valor: item.valor,
@@ -274,9 +260,10 @@
         if (updateEl) updateEl.innerText = 'Última atualização: ' + new Date().toLocaleString();
     }
     
+    window.carregarDadosSupabase = carregarDados;
+    
     function configurarRealtime() {
         if (!supabaseInstance) return;
-        
         supabaseInstance
             .channel('lancamentos')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'lancamentos' }, function() {
