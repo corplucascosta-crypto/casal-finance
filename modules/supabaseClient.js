@@ -62,7 +62,7 @@
         modal.innerHTML = `
             <div class="modal-content" style="max-width: 500px;">
                 <div class="modal-header">
-                    <h3>➕ Novo Lançamento</h3>
+                    <h3>➕ Nova Despesa</h3>
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
@@ -70,13 +70,6 @@
                         <div style="margin-bottom: 15px;">
                             <label>Valor (R$)</label>
                             <input type="number" step="0.01" id="txnValor" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                        </div>
-                        <div style="margin-bottom: 15px;">
-                            <label>Tipo</label>
-                            <select id="txnTipo" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                                <option value="Despesa">Despesa</option>
-                                <option value="Receita">Receita</option>
-                            </select>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label>Categoria</label>
@@ -104,7 +97,7 @@
                         </div>
                         <div id="parcelasGroup" style="margin-bottom: 15px; display: none;">
                             <label>Número de Parcelas</label>
-                            <input type="number" id="txnParcelas" value="1" min="2" max="24" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                            <input type="number" id="txnParcelas" value="2" min="2" max="24" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
                             <small style="color: #64748b;">As próximas parcelas serão geradas automaticamente</small>
                         </div>
                         <div style="margin-bottom: 15px;">
@@ -118,7 +111,7 @@
                                 <option value="Não essencial">Não essencial</option>
                             </select>
                         </div>
-                        <button type="submit" style="background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold;">💾 Salvar Lançamento</button>
+                        <button type="submit" style="background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold;">💾 Salvar Despesa</button>
                     </form>
                 </div>
             </div>
@@ -149,14 +142,14 @@
     
     async function salvarLancamento() {
         var valor = parseFloat(document.getElementById('txnValor').value);
-        var tipo = document.getElementById('txnTipo').value;
         var categoria = document.getElementById('txnCategoria').value;
         var metodo = document.getElementById('txnMetodo').value;
         var parcelas = parseInt(document.getElementById('txnParcelas').value);
         var descricao = document.getElementById('txnDescricao').value || '';
         var tipoGasto = document.getElementById('txnTipoGasto').value;
         
-        // Usar o usuário logado automaticamente
+        // Tipo fixo como Despesa
+        var tipo = 'Despesa';
         var quem = usuarioAtual;
         
         var agora = new Date();
@@ -230,7 +223,7 @@
                 return;
             }
             
-            if (window.showNotification) window.showNotification('✅ Lançamento salvo!', 'success');
+            if (window.showNotification) window.showNotification('✅ Despesa salva!', 'success');
         }
         
         setTimeout(function() { carregarDados(); }, 500);
