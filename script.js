@@ -1,6 +1,6 @@
 // Módulo principal
-let rawData = [];
-let filteredData = [];
+var rawData = [];
+var filteredData = [];
 
 // Inicialização
 async function init() {
@@ -8,34 +8,30 @@ async function init() {
     
     if (!verificarLogin()) return;
     
-    loadFixedIncomes();
-    await loadCSVData();
-    setupEventListeners();
+    // Carregar receitas fixas
+    if (typeof loadFixedIncomes === 'function') loadFixedIncomes();
     
-    // Aguardar um pouco para garantir que os dados foram carregados
-    setTimeout(() => {
-        // Chamar todas as funções de renderização
-        if (typeof window.renderDashboard === 'function') window.renderDashboard();
+    // O Supabase Client já carrega os dados automaticamente
+    // Aguardar o Supabase carregar
+    setTimeout(function() {
+        if (typeof renderDashboard === 'function') renderDashboard();
         if (typeof renderTable === 'function') renderTable();
-        if (typeof window.renderForecast === 'function') window.renderForecast();
-        if (typeof window.renderComparison === 'function') window.renderComparison();
-        if (typeof window.renderPersonDashboard === 'function') window.renderPersonDashboard();
-        if (typeof window.renderDailyChart === 'function') window.renderDailyChart();
+        if (typeof renderForecast === 'function') renderForecast();
+        if (typeof renderDailyChart === 'function') renderDailyChart();
         if (typeof renderAnalytics === 'function') renderAnalytics();
-        if (typeof window.renderBudgets === 'function') window.renderBudgets();
-        
-        console.log('Dados carregados:', window.filteredData?.length || 0, 'registros');
-    }, 500);
+        if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
+    }, 2000);
     
+    setupEventListeners();
     updateLastUpdateTime();
 }
 
 function setupEventListeners() {
-    const filterPerson = document.getElementById('filterPerson');
-    const filterType = document.getElementById('filterType');
-    const filterCategory = document.getElementById('filterCategory');
-    const searchDescription = document.getElementById('searchDescription');
-    const resetFilters = document.getElementById('resetFilters');
+    var filterPerson = document.getElementById('filterPerson');
+    var filterType = document.getElementById('filterType');
+    var filterCategory = document.getElementById('filterCategory');
+    var searchDescription = document.getElementById('searchDescription');
+    var resetFilters = document.getElementById('resetFilters');
     
     if (filterPerson) filterPerson.addEventListener('change', applyFilters);
     if (filterType) filterType.addEventListener('change', applyFilters);
@@ -45,12 +41,12 @@ function setupEventListeners() {
 }
 
 function applyFilters() {
-    const person = document.getElementById('filterPerson')?.value || 'all';
-    const type = document.getElementById('filterType')?.value || 'all';
-    const category = document.getElementById('filterCategory')?.value || 'all';
-    const search = document.getElementById('searchDescription')?.value.toLowerCase() || '';
+    var person = document.getElementById('filterPerson')?.value || 'all';
+    var type = document.getElementById('filterType')?.value || 'all';
+    var category = document.getElementById('filterCategory')?.value || 'all';
+    var search = document.getElementById('searchDescription')?.value.toLowerCase() || '';
 
-    window.filteredData = window.rawData.filter(item => {
+    filteredData = rawData.filter(function(item) {
         if (person !== 'all' && item.quem !== person) return false;
         if (type !== 'all' && item.tipo !== type) return false;
         if (category !== 'all' && item.categoria !== category) return false;
@@ -59,21 +55,19 @@ function applyFilters() {
     });
 
     // Atualizar todas as visualizações
-    if (typeof window.renderDashboard === 'function') window.renderDashboard();
+    if (typeof renderDashboard === 'function') renderDashboard();
     if (typeof renderTable === 'function') renderTable();
-    if (typeof window.renderForecast === 'function') window.renderForecast();
-    if (typeof window.renderComparison === 'function') window.renderComparison();
-    if (typeof window.renderPersonDashboard === 'function') window.renderPersonDashboard();
-    if (typeof window.renderDailyChart === 'function') window.renderDailyChart();
+    if (typeof renderForecast === 'function') renderForecast();
+    if (typeof renderDailyChart === 'function') renderDailyChart();
     if (typeof renderAnalytics === 'function') renderAnalytics();
-    if (typeof window.renderBudgets === 'function') window.renderBudgets();
+    if (typeof renderPersonDashboard === 'function') renderPersonDashboard();
 }
 
 function resetFilters() {
-    const filterPerson = document.getElementById('filterPerson');
-    const filterType = document.getElementById('filterType');
-    const filterCategory = document.getElementById('filterCategory');
-    const searchDescription = document.getElementById('searchDescription');
+    var filterPerson = document.getElementById('filterPerson');
+    var filterType = document.getElementById('filterType');
+    var filterCategory = document.getElementById('filterCategory');
+    var searchDescription = document.getElementById('searchDescription');
     
     if (filterPerson) filterPerson.value = 'all';
     if (filterType) filterType.value = 'all';
@@ -84,11 +78,12 @@ function resetFilters() {
 }
 
 function updateLastUpdateTime() {
-    const now = new Date();
-    const updateEl = document.getElementById('lastUpdate');
+    var now = new Date();
+    var updateEl = document.getElementById('lastUpdate');
     if (updateEl) {
-        updateEl.innerText = `Última atualização: ${now.toLocaleString()}`;
+        updateEl.innerText = 'Última atualização: ' + now.toLocaleString();
     }
 }
 
+// Aguardar DOM carregar
 document.addEventListener('DOMContentLoaded', init);
