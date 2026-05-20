@@ -1,4 +1,4 @@
-// Supabase Client - Versão estável com parcelas corretas
+// Supabase Client - Apenas data, sem horas
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -163,6 +163,7 @@
         var quem = usuarioAtual;
         
         var partes = dataSelecionada.split('-');
+        var dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
         var mesReferencia = parseInt(partes[1]);
         
         var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
@@ -181,6 +182,7 @@
                 var diaParcela = dataParcela.getDate();
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
                 var dataParcelaStr = anoParcela + '-' + String(mesParcela).padStart(2,'0') + '-' + String(diaParcela).padStart(2,'0');
+                var dataParcelaFormatada = diaParcela + '/' + mesParcela + '/' + anoParcela;
                 
                 var dadosParcela = {
                     valor: valorParcela,
@@ -194,12 +196,11 @@
                     tipo_gasto: tipoGasto,
                     mes_referencia: mesParcela,
                     dia_semana: diaSemanaParcela,
-                    hora: '00:00:00',
+                    data: dataParcelaFormatada,
                     data_hora: dataParcelaStr
                 };
                 
-                var { error } = await supabaseInstance.from('lancamentos').insert([dadosParcela]);
-                if (error) console.error('Erro parcela:', error);
+                await supabaseInstance.from('lancamentos').insert([dadosParcela]);
             }
             
             if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2), 'success');
@@ -216,7 +217,7 @@
                 tipo_gasto: tipoGasto,
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
-                hora: '00:00:00',
+                data: dataFormatada,
                 data_hora: dataSelecionada
             };
             
@@ -245,16 +246,16 @@
         }
         
         window.rawData = (data || []).map(function(item) {
-            var dataFormatada = item.data_hora;
-            if (dataFormatada && dataFormatada.includes('-')) {
-                var partes = dataFormatada.split('-');
-                dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
+            var dataExibicao = item.data || item.data_hora;
+            if (dataExibicao && dataExibicao.includes('-') && !dataExibicao.includes('/')) {
+                var partes = dataExibicao.split('-');
+                dataExibicao = partes[2] + '/' + partes[1] + '/' + partes[0];
             }
             
             return {
                 id: item.id,
-                dataRaw: dataFormatada,
-                data: dataFormatada,
+                dataRaw: dataExibicao,
+                data: dataExibicao,
                 valor: item.valor,
                 tipo: item.tipo,
                 categoria: item.categoria,
