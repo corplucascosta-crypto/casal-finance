@@ -1465,3 +1465,11 @@ canvas {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
 }
+.delete-transaction-btn {
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.delete-transaction-btn:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
