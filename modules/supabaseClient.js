@@ -1,4 +1,4 @@
-// Supabase Client - Versão corrigida
+// Supabase Client - Data no formato ISO
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -151,7 +151,7 @@
     }
     
     async function salvarLancamento() {
-        var dataSelecionada = document.getElementById('txnData').value;
+        var dataISO = document.getElementById('txnData').value;
         var valor = parseFloat(document.getElementById('txnValor').value);
         var categoria = document.getElementById('txnCategoria').value;
         var metodo = document.getElementById('txnMetodo').value;
@@ -162,26 +162,28 @@
         var tipo = 'Despesa';
         var quem = usuarioAtual;
         
-        var partes = dataSelecionada.split('-');
-        var dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
+        // Formatar data para exibição (DD/MM/YYYY)
+        var partes = dataISO.split('-');
+        var dataExibicao = partes[2] + '/' + partes[1] + '/' + partes[0];
         var mesReferencia = parseInt(partes[1]);
         
         var diasSemana = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-        var dataObj = new Date(dataSelecionada);
+        var dataObj = new Date(dataISO);
         var diaSemana = diasSemana[dataObj.getDay()];
         
         if (metodo === 'Crédito parcelado' && parcelas > 1) {
             var valorParcela = valor / parcelas;
             
             for (var i = 0; i < parcelas; i++) {
-                var dataParcela = new Date(dataSelecionada);
+                var dataParcela = new Date(dataISO);
                 dataParcela.setMonth(dataObj.getMonth() + i);
                 
                 var anoParcela = dataParcela.getFullYear();
                 var mesParcela = dataParcela.getMonth() + 1;
                 var diaParcela = dataParcela.getDate();
                 var diaSemanaParcela = diasSemana[dataParcela.getDay()];
-                var dataParcelaFormatada = diaParcela + '/' + mesParcela + '/' + anoParcela;
+                var dataParcelaISO = anoParcela + '-' + String(mesParcela).padStart(2,'0') + '-' + String(diaParcela).padStart(2,'0');
+                var dataParcelaExibicao = diaParcela + '/' + mesParcela + '/' + anoParcela;
                 
                 var dadosParcela = {
                     valor: valorParcela,
@@ -195,7 +197,7 @@
                     tipo_gasto: tipoGasto,
                     mes_referencia: mesParcela,
                     dia_semana: diaSemanaParcela,
-                    data_hora: dataParcelaFormatada
+                    data_hora: dataParcelaISO
                 };
                 
                 await supabaseInstance.from('lancamentos').insert([dadosParcela]);
@@ -215,13 +217,13 @@
                 tipo_gasto: tipoGasto,
                 mes_referencia: mesReferencia,
                 dia_semana: diaSemana,
-                data_hora: dataFormatada
+                data_hora: dataISO
             };
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
             if (error) {
                 console.error('Erro ao salvar:', error);
-                if (window.showNotification) window.showNotification('❌ Erro ao salvar', 'error');
+                if (window.showNotification) window.showNotification('❌ Erro ao salvar: ' + (error.message || 'Verifique os dados'), 'error');
                 return;
             }
             if (window.showNotification) window.showNotification('✅ Despesa salva!', 'success');
@@ -244,8 +246,9 @@
         }
         
         window.rawData = (data || []).map(function(item) {
+            // Formatar data para exibição (DD/MM/YYYY)
             var dataExibicao = item.data_hora || '';
-            if (dataExibicao && !dataExibicao.includes('/') && dataExibicao.includes('-')) {
+            if (dataExibicao && dataExibicao.includes('-')) {
                 var partes = dataExibicao.split('-');
                 dataExibicao = partes[2] + '/' + partes[1] + '/' + partes[0];
             }
