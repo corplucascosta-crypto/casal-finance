@@ -274,3 +274,6 @@
     
     document.addEventListener('DOMContentLoaded', initSupabase);
 })();
+
+// Expor função global para recarregar dados
+window.carregarDadosSupabase = carregarDados;

@@ -28,13 +28,11 @@ function renderTable() {
         row.insertCell(5).innerText = item.metodo || '-';
         row.insertCell(6).innerText = item.descricao || 'Sem descrição';
         
-        // Botão de excluir com o ID real do Supabase
         var deleteCell = row.insertCell(7);
         deleteCell.style.textAlign = 'center';
         deleteCell.innerHTML = '<button class="delete-transaction-btn" data-id="' + item.id + '" data-descricao="' + (item.descricao || '').replace(/'/g, "\\'") + '" data-valor="' + item.valor + '" style="background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #ef4444;">🗑️</button>';
     }
     
-    // Adicionar eventos de exclusão
     document.querySelectorAll('.delete-transaction-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -52,13 +50,13 @@ function renderTable() {
 
 async function excluirLancamento(id) {
     if (!window.supabaseClient || !window.supabaseClient.supabase) {
-        if (window.showNotification) window.showNotification('❌ Erro: Supabase não disponível', 'error');
+        if (window.showNotification) window.showNotification('❌ Supabase não disponível', 'error');
         return;
     }
     
     var supabase = window.supabaseClient.supabase;
     
-    console.log('Excluindo lançamento ID:', id);
+    console.log('Excluindo ID:', id);
     
     var { error } = await supabase
         .from('lancamentos')
@@ -66,19 +64,24 @@ async function excluirLancamento(id) {
         .eq('id', parseInt(id));
     
     if (error) {
-        console.error('Erro ao excluir:', error);
-        if (window.showNotification) window.showNotification('❌ Erro ao excluir lançamento: ' + error.message, 'error');
+        console.error('Erro:', error);
+        if (window.showNotification) window.showNotification('❌ Erro ao excluir', 'error');
         return;
     }
     
-    if (window.showNotification) window.showNotification('✅ Lançamento excluído com sucesso!', 'success');
+    if (window.showNotification) window.showNotification('✅ Lançamento excluído!', 'success');
     
-    // Recarregar os dados
-    if (typeof carregarDadosSupabase === 'function') {
-        carregarDadosSupabase();
-    } else if (window.carregarDadosSupabase) {
-        window.carregarDadosSupabase();
-    }
+    // Forçar recarregamento dos dados
+    setTimeout(function() {
+        if (typeof carregarDadosSupabase === 'function') {
+            carregarDadosSupabase();
+        } else if (window.carregarDadosSupabase) {
+            window.carregarDadosSupabase();
+        } else {
+            // Fallback: recarregar a página
+            location.reload();
+        }
+    }, 500);
 }
 
 window.renderTable = renderTable;
