@@ -554,3 +554,92 @@ td.negative { color: #ef4444; font-weight: 600; }
         padding: 4px 2px;
     }
 }
+
+/* ========== AJUSTE DO MÓDULO RECEITAS | DESPESAS FIXAS ========== */
+/* Garantir que o container principal respeite a largura máxima */
+.fixed-finances-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Garantir que os painéis internos também respeitem */
+.fixed-finances-container .panel {
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Formulários com largura controlada */
+.fixed-finances-container .form-panel {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.fixed-finances-container .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+}
+
+.fixed-finances-container .form-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+}
+
+/* Grid de duas colunas para listas */
+.fixed-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Colunas internas */
+.fixed-col {
+    background: #f8fafc;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Itens dentro das colunas */
+.fixed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    margin: 8px 12px;
+    background: white;
+    border-radius: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 768px) {
+    .fixed-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .fixed-finances-container .form-row {
+        flex-direction: column;
+    }
+    
+    .fixed-finances-container .form-input {
+        width: 100%;
+    }
+}
