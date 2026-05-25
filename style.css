@@ -334,3 +334,223 @@ td.negative { color: #ef4444; font-weight: 600; }
 .module.active { 
     display: block; 
 }
+
+/* Ajustes para o módulo de lançamentos */
+.transactions {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    overflow-x: auto;
+    width: 100%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Garantir que a tabela ocupe toda largura disponível */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Ajustar filtros para mesma largura */
+.filters, .enhanced-filters, .controls-bar {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Botão Nova Despesa */
+.add-transaction-btn-container {
+    margin: 16px 0;
+    text-align: right;
+}
+
+.add-transaction-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.add-transaction-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* ========== AJUSTES DE RESPONSIVIDADE ========== */
+
+/* Para telas médias (tablets) */
+@media (max-width: 1024px) {
+    .main-content {
+        padding: 16px;
+    }
+    
+    .insights-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .forecast-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .fixed-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .card {
+        max-width: 100%;
+    }
+}
+
+/* Para telas pequenas (celular) */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 12px;
+    }
+    
+    .header-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .user-info {
+        justify-content: space-between;
+    }
+    
+    .insights-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .forecast-cards {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .forecast-card {
+        text-align: left;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-input {
+        width: 100%;
+    }
+    
+    .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .refresh-control {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .export-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+    }
+    
+    .filter-group select,
+    .filter-group input,
+    .filter-group button {
+        width: 100%;
+    }
+    
+    .date-filters {
+        flex-direction: column;
+    }
+    
+    .date-filters input,
+    .date-filters select {
+        width: 100%;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+    }
+    
+    .tip-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .add-transaction-btn-container {
+        text-align: center;
+    }
+    
+    .add-transaction-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Para telas muito pequenas (celular pequeno) */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 8px;
+    }
+    
+    .section-title {
+        font-size: 0.85rem;
+    }
+    
+    .insight-card {
+        padding: 10px;
+    }
+    
+    .insight-icon {
+        font-size: 1rem;
+    }
+    
+    .insight-content h4 {
+        font-size: 0.55rem;
+    }
+    
+    .insight-content p {
+        font-size: 0.7rem;
+    }
+    
+    .forecast-card h4 {
+        font-size: 0.55rem;
+    }
+    
+    .forecast-card p {
+        font-size: 0.75rem;
+    }
+    
+    .card-content p {
+        font-size: 1rem;
+    }
+    
+    th, td {
+        font-size: 0.6rem;
+        padding: 4px 2px;
+    }
+}
