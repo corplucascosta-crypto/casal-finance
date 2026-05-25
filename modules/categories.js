@@ -8,7 +8,6 @@
     function initCategories() {
         loadCategories();
         criarModalCategorias();
-        adicionarBotaoCategorias();
         
         // Atualizar selects de categoria quando houver mudanças
         document.addEventListener('categoriasAtualizadas', () => {
@@ -65,9 +64,7 @@
         }
     }
     
-    function adicionarBotaoCategorias() {
         // Remover botão duplicado se existir
-        const existingBtn = document.getElementById('manageCategoriesBtn');
         if (existingBtn) existingBtn.remove();
         
         const filtersDiv = document.querySelector('.filters');
@@ -75,11 +72,9 @@
         
         const btnContainer = document.createElement('div');
         btnContainer.className = 'categories-btn-container';
-        btnContainer.innerHTML = `<button id="manageCategoriesBtn" class="manage-categories-btn">🏷️ Gerenciar Categorias</button>`;
         
         filtersDiv.appendChild(btnContainer);
         
-        const manageBtn = document.getElementById('manageCategoriesBtn');
         if (manageBtn) {
             manageBtn.addEventListener('click', abrirModalCategorias);
         }
