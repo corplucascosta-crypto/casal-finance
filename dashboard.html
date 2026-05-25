@@ -19,7 +19,6 @@
         </div>
         <ul class="menu-items">
             <li class="menu-item active" data-module="dashboard"><span>📊</span> Dashboard</li>
-            <li class="menu-item" data-module="fixedIncome"><span>📋</span> Receitas | Despesas Fixas</li>
             <li class="menu-item" data-module="transactions"><span>💳</span> Lançamentos</li>
             <li class="menu-item" data-module="analytics"><span>📈</span> Análises</li>
         </ul>
@@ -62,18 +61,11 @@
             <section class="daily-chart-section"><h2 class="section-title">📅 Gastos por Dia</h2><div class="daily-chart-controls"><select id="dailyChartMonth"></select><select id="dailyChartYear"></select></div><div class="daily-chart-container"><canvas id="dailyChart" width="400" height="200"></canvas></div></section>
         </div>
 
-        <div id="fixedIncomeModule" class="module">
-            <section class="fixed-income-section"><h2 class="section-title">📋 Receitas | Despesas Fixas Mensais</h2>
-                <div class="fixed-income-controls">
-                    <select id="fixedIncomePerson"><option value="LUCAS">LUCAS</option><option value="BEATRIZ">BEATRIZ</option></select>
-                    <input type="text" id="fixedIncomeDesc" placeholder="Descrição (ex: Salário)">
-                    <input type="number" id="fixedIncomeValue" placeholder="Valor (R$)" step="0.01">
-                    <button id="addFixedIncomeBtn">➕ Adicionar</button>
-                </div>
-                <div id="fixedIncomeList" class="fixed-income-list"></div>
-            </section>
         </div>
 
+        <div id="fixedIncomeModule" class="module">
+            <div id="fixedIncomeList"></div>
+        </div>
         <div id="transactionsModule" class="module">
             <div class="controls-bar">
                 <div class="refresh-control"><div class="refresh-buttons"><button id="manualRefreshBtn" class="refresh-btn">🔄 Atualizar Agora</button><button id="toggleAutoRefreshBtn" class="auto-refresh-btn active">⏱️ Auto (30s)</button></div><div class="refresh-status"><span id="refreshStatus">✅ Dados atualizados</span></div></div>
