@@ -321,3 +321,16 @@ td.negative { color: #ef4444; font-weight: 600; }
     .header-top { flex-direction: column; align-items: stretch; }
     .controls-bar { flex-direction: column; align-items: stretch; }
 }
+
+/* Controle de módulos - esconder módulos inativos */
+.module { display: none; }
+.module.active { display: block; }
+
+/* Controle de módulos - APENAS O MÓDULO ATIVO APARECE */
+.module { 
+    display: none; 
+}
+
+.module.active { 
+    display: block; 
+}
