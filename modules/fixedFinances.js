@@ -6,6 +6,20 @@
     var supabase = null;
     var abaAtiva = 'receitas';
     
+    // Categorias padronizadas com emojis
+    var categoriasDespesas = [
+        { valor: 'Moradia', emoji: '🏠', label: 'Moradia' },
+        { valor: 'Serviços', emoji: '📡', label: 'Serviços (Internet, Streaming)' },
+        { valor: 'Transporte', emoji: '🚗', label: 'Transporte' },
+        { valor: 'Saúde', emoji: '💊', label: 'Saúde' },
+        { valor: 'Educação', emoji: '📚', label: 'Educação' },
+        { valor: 'Alimentação', emoji: '🍔', label: 'Alimentação' },
+        { valor: 'Lazer', emoji: '🎮', label: 'Lazer' },
+        { valor: 'Vestuário', emoji: '👕', label: 'Vestuário' },
+        { valor: 'Investimentos', emoji: '📈', label: 'Investimentos' },
+        { valor: 'Outros', emoji: '📌', label: 'Outros (justificar no campo descrição)' }
+    ];
+    
     function initFixedFinances() {
         var checkSupabase = setInterval(function() {
             if (window.supabaseClient && window.supabaseClient.supabase) {
@@ -25,7 +39,13 @@
         var container = document.getElementById('fixedIncomeList');
         if (!container) return;
         
-        // Criar estrutura com abas
+        // Gerar options de categorias
+        var categoriasOptions = '';
+        for (var i = 0; i < categoriasDespesas.length; i++) {
+            var cat = categoriasDespesas[i];
+            categoriasOptions += '<option value="' + cat.valor + '">' + cat.emoji + ' ' + cat.label + '</option>';
+        }
+        
         container.innerHTML = `
             <div class="fixed-finances-container">
                 <div class="abas-container">
@@ -37,8 +57,8 @@
                         <h4>➕ Nova Receita Fixa</h4>
                         <div class="form-row">
                             <select id="fixReceitaPessoa" class="form-input">
-                                <option value="LUCAS">LUCAS</option>
-                                <option value="BEATRIZ">BEATRIZ</option>
+                                <option value="LUCAS">👨 LUCAS</option>
+                                <option value="BEATRIZ">👩 BEATRIZ</option>
                             </select>
                             <input type="text" id="fixReceitaDesc" placeholder="Descrição (ex: Salário)" class="form-input">
                             <input type="number" step="0.01" id="fixReceitaValor" placeholder="Valor (R$)" class="form-input">
@@ -52,25 +72,27 @@
                         <h4>➕ Nova Despesa Fixa</h4>
                         <div class="form-row">
                             <select id="fixDespesaPessoa" class="form-input">
-                                <option value="LUCAS">LUCAS</option>
-                                <option value="BEATRIZ">BEATRIZ</option>
+                                <option value="LUCAS">👨 LUCAS</option>
+                                <option value="BEATRIZ">👩 BEATRIZ</option>
                             </select>
-                            <input type="text" id="fixDespesaDesc" placeholder="Descrição (ex: Aluguel, Internet)" class="form-input">
+                            <input type="text" id="fixDespesaDesc" placeholder="Descrição (ex: Aluguel, Netflix)" class="form-input">
                             <input type="number" step="0.01" id="fixDespesaValor" placeholder="Valor (R$)" class="form-input">
                             <select id="fixDespesaCategoria" class="form-input">
-                                <option value="Moradia">🏠 Moradia</option>
-                                <option value="Serviços">📡 Serviços</option>
-                                <option value="Transporte">🚗 Transporte</option>
-                                <option value="Saúde">💊 Saúde</option>
-                                <option value="Educação">📚 Educação</option>
-                                <option value="Outros">📌 Outros</option>
+                                ${categoriasOptions}
                             </select>
                             <select id="fixDespesaVencimento" class="form-input">
                                 <option value="">Dia vencimento</option>
                                 <option value="1">Dia 1</option><option value="2">Dia 2</option><option value="3">Dia 3</option>
                                 <option value="4">Dia 4</option><option value="5">Dia 5</option><option value="6">Dia 6</option>
                                 <option value="7">Dia 7</option><option value="8">Dia 8</option><option value="9">Dia 9</option>
-                                <option value="10">Dia 10</option>
+                                <option value="10">Dia 10</option><option value="11">Dia 11</option><option value="12">Dia 12</option>
+                                <option value="13">Dia 13</option><option value="14">Dia 14</option><option value="15">Dia 15</option>
+                                <option value="16">Dia 16</option><option value="17">Dia 17</option><option value="18">Dia 18</option>
+                                <option value="19">Dia 19</option><option value="20">Dia 20</option><option value="21">Dia 21</option>
+                                <option value="22">Dia 22</option><option value="23">Dia 23</option><option value="24">Dia 24</option>
+                                <option value="25">Dia 25</option><option value="26">Dia 26</option><option value="27">Dia 27</option>
+                                <option value="28">Dia 28</option><option value="29">Dia 29</option><option value="30">Dia 30</option>
+                                <option value="31">Dia 31</option>
                             </select>
                             <button id="addDespesaBtn" class="form-btn warning">➕ Adicionar</button>
                         </div>
@@ -97,7 +119,9 @@
             var pessoa = document.getElementById('fixReceitaPessoa').value;
             var descricao = document.getElementById('fixReceitaDesc').value;
             var valor = parseFloat(document.getElementById('fixReceitaValor').value);
-            if (descricao && valor > 0) adicionarReceita(pessoa, descricao, valor);
+            if (!descricao) { alert('Digite uma descrição'); return; }
+            if (!valor || valor <= 0) { alert('Digite um valor válido'); return; }
+            adicionarReceita(pessoa, descricao, valor);
         });
         
         document.getElementById('addDespesaBtn').addEventListener('click', function() {
@@ -106,7 +130,9 @@
             var valor = parseFloat(document.getElementById('fixDespesaValor').value);
             var categoria = document.getElementById('fixDespesaCategoria').value;
             var vencimento = parseInt(document.getElementById('fixDespesaVencimento').value);
-            if (descricao && valor > 0) adicionarDespesa(pessoa, descricao, valor, categoria, vencimento);
+            if (!descricao) { alert('Digite uma descrição'); return; }
+            if (!valor || valor <= 0) { alert('Digite um valor válido'); return; }
+            adicionarDespesa(pessoa, descricao, valor, categoria, vencimento);
         });
     }
     
@@ -116,6 +142,7 @@
         if (error) { console.error(error); return; }
         window.receitasFixas = data || [];
         renderizarReceitas();
+        atualizarForecast();
     }
     
     async function carregarDespesas() {
@@ -132,12 +159,11 @@
         if (error) { alert('Erro: ' + error.message); return; }
         if (window.showNotification) window.showNotification('✅ Receita fixa adicionada!', 'success');
         carregarReceitas();
-        atualizarForecast();
         limparCampos('fixReceita');
     }
     
     async function adicionarDespesa(pessoa, descricao, valor, categoria, vencimento) {
-        var { error } = await supabase.from('despesas_fixas').insert([{ pessoa, descricao, valor, categoria, vencimento, ativo: true }]);
+        var { error } = await supabase.from('despesas_fixas').insert([{ pessoa, descricao, valor, categoria, vencimento: vencimento || null, ativo: true }]);
         if (error) { alert('Erro: ' + error.message); return; }
         if (window.showNotification) window.showNotification('✅ Despesa fixa adicionada!', 'success');
         carregarDespesas();
@@ -147,20 +173,17 @@
     async function toggleReceita(id, ativo) {
         await supabase.from('receitas_fixas').update({ ativo: ativo }).eq('id', id);
         carregarReceitas();
-        atualizarForecast();
     }
     
     async function toggleDespesa(id, ativo) {
         await supabase.from('despesas_fixas').update({ ativo: ativo }).eq('id', id);
         carregarDespesas();
-        atualizarForecast();
     }
     
     async function deletarReceita(id) {
         if (confirm('Remover esta receita fixa?')) {
             await supabase.from('receitas_fixas').delete().eq('id', id);
             carregarReceitas();
-            atualizarForecast();
         }
     }
     
@@ -168,7 +191,6 @@
         if (confirm('Remover esta despesa fixa?')) {
             await supabase.from('despesas_fixas').delete().eq('id', id);
             carregarDespesas();
-            atualizarForecast();
         }
     }
     
@@ -182,8 +204,8 @@
         var beatrizTotal = beatrizReceitas.filter(r => r.ativo).reduce((s, r) => s + r.valor, 0);
         
         var html = '<div class="fixed-grid">';
-        html += gerarColuna('👨 LUCAS', lucasReceitas, lucasTotal, 'receita');
-        html += gerarColuna('👩 BEATRIZ', beatrizReceitas, beatrizTotal, 'receita');
+        html += gerarColunaReceita('👨 LUCAS', lucasReceitas, lucasTotal);
+        html += gerarColunaReceita('👩 BEATRIZ', beatrizReceitas, beatrizTotal);
         html += '</div>';
         container.innerHTML = html;
         
@@ -205,8 +227,8 @@
         var beatrizTotal = beatrizDespesas.filter(d => d.ativo).reduce((s, d) => s + d.valor, 0);
         
         var html = '<div class="fixed-grid">';
-        html += gerarColuna('👨 LUCAS', lucasDespesas, lucasTotal, 'despesa');
-        html += gerarColuna('👩 BEATRIZ', beatrizDespesas, beatrizTotal, 'despesa');
+        html += gerarColunaDespesa('👨 LUCAS', lucasDespesas, lucasTotal);
+        html += gerarColunaDespesa('👩 BEATRIZ', beatrizDespesas, beatrizTotal);
         html += '</div>';
         container.innerHTML = html;
         
@@ -218,30 +240,59 @@
         });
     }
     
-    function gerarColuna(titulo, itens, total, tipo) {
-        var corTitulo = tipo === 'receita' ? '#3b82f6' : '#ef4444';
-        var corBg = tipo === 'receita' ? '#dbeafe' : '#fee2e2';
-        var html = '<div class="fixed-col"><div class="col-header" style="background: ' + corTitulo + ';">' + titulo + '</div>';
-        html += '<div class="col-total" style="background: ' + corBg + ';">Total: R$ ' + total.toFixed(2) + '</div>';
-        if (itens.length === 0) html += '<div class="col-empty">Nenhum item cadastrado</div>';
+    function gerarColunaReceita(titulo, itens, total) {
+        var html = '<div class="fixed-col"><div class="col-header" style="background: #3b82f6;">' + titulo + '</div>';
+        html += '<div class="col-total" style="background: #dbeafe;">💰 Total: R$ ' + total.toFixed(2) + '</div>';
+        if (itens.length === 0) html += '<div class="col-empty">Nenhuma receita cadastrada</div>';
         else {
             for (var i = 0; i < itens.length; i++) {
                 var item = itens[i];
                 var classe = item.ativo ? '' : 'inactive';
                 html += '<div class="fixed-item ' + classe + '">';
-                html += '<div><strong>' + item.descricao + '</strong>';
-                if (item.categoria) html += '<br><small>' + item.categoria + '</small>';
-                if (item.vencimento) html += '<br><small>Vence dia ' + item.vencimento + '</small>';
-                html += '</div>';
+                html += '<div><strong>' + item.descricao + '</strong></div>';
                 html += '<div class="item-value">R$ ' + item.valor.toFixed(2) + '</div>';
                 html += '<div class="item-actions">';
-                html += '<button class="toggle-' + tipo + '" data-id="' + item.id + '" data-ativo="' + item.ativo + '">' + (item.ativo ? '✅' : '⭕') + '</button>';
-                html += '<button class="delete-' + tipo + '" data-id="' + item.id + '">🗑️</button>';
+                html += '<button class="toggle-receita" data-id="' + item.id + '" data-ativo="' + item.ativo + '">' + (item.ativo ? '✅' : '⭕') + '</button>';
+                html += '<button class="delete-receita" data-id="' + item.id + '">🗑️</button>';
                 html += '</div></div>';
             }
         }
         html += '</div>';
         return html;
+    }
+    
+    function gerarColunaDespesa(titulo, itens, total) {
+        var html = '<div class="fixed-col"><div class="col-header" style="background: #ef4444;">' + titulo + '</div>';
+        html += '<div class="col-total" style="background: #fee2e2;">💸 Total: R$ ' + total.toFixed(2) + '</div>';
+        if (itens.length === 0) html += '<div class="col-empty">Nenhuma despesa cadastrada</div>';
+        else {
+            for (var i = 0; i < itens.length; i++) {
+                var item = itens[i];
+                var classe = item.ativo ? '' : 'inactive';
+                var emoji = obterEmojiCategoria(item.categoria);
+                html += '<div class="fixed-item ' + classe + '">';
+                html += '<div><strong>' + item.descricao + '</strong>';
+                if (item.categoria) html += '<br><small>' + emoji + ' ' + item.categoria + '</small>';
+                if (item.vencimento) html += '<br><small>📅 Vence dia ' + item.vencimento + '</small>';
+                html += '</div>';
+                html += '<div class="item-value">R$ ' + item.valor.toFixed(2) + '</div>';
+                html += '<div class="item-actions">';
+                html += '<button class="toggle-despesa" data-id="' + item.id + '" data-ativo="' + item.ativo + '">' + (item.ativo ? '✅' : '⭕') + '</button>';
+                html += '<button class="delete-despesa" data-id="' + item.id + '">🗑️</button>';
+                html += '</div></div>';
+            }
+        }
+        html += '</div>';
+        return html;
+    }
+    
+    function obterEmojiCategoria(categoria) {
+        var emojis = {
+            'Moradia': '🏠', 'Serviços': '📡', 'Transporte': '🚗', 'Saúde': '💊',
+            'Educação': '📚', 'Alimentação': '🍔', 'Lazer': '🎮', 'Vestuário': '👕',
+            'Investimentos': '📈', 'Outros': '📌'
+        };
+        return emojis[categoria] || '📌';
     }
     
     function limparCampos(prefixo) {
@@ -272,8 +323,8 @@
     function configurarRealtime() {
         if (!supabase) return;
         supabase.channel('fixed_finances')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'receitas_fixas' }, function() { carregarReceitas(); atualizarForecast(); })
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas_fixas' }, function() { carregarDespesas(); atualizarForecast(); })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'receitas_fixas' }, function() { carregarReceitas(); })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas_fixas' }, function() { carregarDespesas(); })
             .subscribe();
     }
     

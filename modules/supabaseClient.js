@@ -1,4 +1,4 @@
-// Supabase Client - Versão simplificada
+// Supabase Client - Com categorias padronizadas
 (function() {
     if (window.supabaseInitialized) return;
     window.supabaseInitialized = true;
@@ -8,6 +8,13 @@
     
     var supabaseInstance = null;
     var usuarioAtual = null;
+    
+    // Categorias padronizadas para lançamentos
+    var categorias = [
+        '🏠 Moradia', '📡 Serviços', '🚗 Transporte', '💊 Saúde', 
+        '📚 Educação', '🍔 Alimentação', '🎮 Lazer', '👕 Vestuário', 
+        '📈 Investimentos', '📌 Outros'
+    ];
     
     function initSupabase() {
         usuarioAtual = localStorage.getItem('usuarioLogado');
@@ -56,6 +63,12 @@
     }
     
     function abrirModalLancamento() {
+        // Gerar options de categorias com emojis
+        var categoriasOptions = '';
+        for (var i = 0; i < categorias.length; i++) {
+            categoriasOptions += '<option value="' + categorias[i].substring(3) + '">' + categorias[i] + '</option>';
+        }
+        
         var modal = document.createElement('div');
         modal.id = 'transactionModal';
         modal.className = 'modal';
@@ -77,42 +90,34 @@
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label>Categoria</label>
-                            <input type="text" id="txnCategoria" list="categoriasList" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                            <datalist id="categoriasList">
-                                <option>Alimentação</option>
-                                <option>Lazer</option>
-                                <option>Transporte</option>
-                                <option>Saúde</option>
-                                <option>Educação</option>
-                                <option>Moradia</option>
-                                <option>Vestuário</option>
-                                <option>Investimentos</option>
-                            </datalist>
+                            <select id="txnCategoria" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                                ${categoriasOptions}
+                            </select>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label>Método de Pagamento</label>
                             <select id="txnMetodo" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                                <option value="PIX">PIX</option>
-                                <option value="Débito">Débito</option>
-                                <option value="Crédito à vista">Crédito à vista</option>
-                                <option value="Crédito parcelado">Crédito parcelado</option>
-                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="PIX">💳 PIX</option>
+                                <option value="Débito">💳 Débito</option>
+                                <option value="Crédito à vista">💳 Crédito à vista</option>
+                                <option value="Crédito parcelado">💳 Crédito parcelado</option>
+                                <option value="Dinheiro">💵 Dinheiro</option>
                             </select>
                         </div>
                         <div id="parcelasGroup" style="margin-bottom: 15px; display: none;">
                             <label>Número de Parcelas</label>
                             <input type="number" id="txnParcelas" value="2" min="2" max="12" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                            <small style="color: #64748b;">As parcelas serão geradas automaticamente</small>
+                            <small style="color: #64748b;">As próximas parcelas serão geradas automaticamente</small>
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label>Descrição</label>
-                            <input type="text" id="txnDescricao" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                            <input type="text" id="txnDescricao" placeholder="Ex: Compras do mês, Detalhamento..." style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
                         </div>
                         <div style="margin-bottom: 15px;">
                             <label>Tipo de Gasto</label>
                             <select id="txnTipoGasto" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
-                                <option value="Essencial">Essencial</option>
-                                <option value="Não essencial">Não essencial</option>
+                                <option value="Essencial">✅ Essencial</option>
+                                <option value="Não essencial">⚠️ Não essencial</option>
                             </select>
                         </div>
                         <button type="submit" style="background: #10b981; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold;">💾 Salvar Despesa</button>
@@ -162,7 +167,6 @@
         var tipo = 'Despesa';
         var quem = usuarioAtual;
         
-        // Formatar data para exibição (DD/MM/YYYY)
         var partes = dataISO.split('-');
         var dataExibicao = partes[2] + '/' + partes[1] + '/' + partes[0];
         var mesReferencia = parseInt(partes[1]);
@@ -199,8 +203,7 @@
                     data_hora: dataParcelaISO
                 };
                 
-                var { error } = await supabaseInstance.from('lancamentos').insert([dadosParcela]);
-                if (error) console.error('Erro parcela:', error);
+                await supabaseInstance.from('lancamentos').insert([dadosParcela]);
             }
             
             if (window.showNotification) window.showNotification('✅ Compra parcelada em ' + parcelas + 'x de R$ ' + valorParcela.toFixed(2), 'success');
@@ -219,8 +222,6 @@
                 dia_semana: diaSemana,
                 data_hora: dataExibicao
             };
-            
-            console.log('Enviando dados:', dados);
             
             var { error } = await supabaseInstance.from('lancamentos').insert([dados]);
             if (error) {
