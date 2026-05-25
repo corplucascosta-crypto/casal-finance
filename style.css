@@ -896,3 +896,75 @@ th {
         padding: 8px 4px;
     }
 }
+
+/* ========== AJUSTE DO MÓDULO ANÁLISES ========== */
+/* Garantir que o container principal do módulo respeite a largura máxima */
+#analyticsModule {
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Seção de análises */
+.analytics-section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Container dos cards de análise */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Cards individuais */
+.analytics-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Títulos dos cards */
+.analytics-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1e293b;
+}
+
+/* Canvas dos gráficos */
+.analytics-card canvas {
+    max-height: 250px;
+    width: 100%;
+}
+
+/* Responsividade para telas médias */
+@media (max-width: 1024px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+/* Responsividade para telas pequenas */
+@media (max-width: 768px) {
+    .analytics-card {
+        padding: 16px;
+    }
+    
+    .analytics-card h3 {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    
+    .analytics-card canvas {
+        max-height: 200px;
+    }
+}
