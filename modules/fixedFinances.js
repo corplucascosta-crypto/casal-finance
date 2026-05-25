@@ -1,4 +1,4 @@
-// Fixed Finances Module - Receitas e Despesas Fixas (Apenas visualização)
+// Fixed Finances Module - Apenas visualização (sem formulário de adição)
 (function() {
     if (window.fixedFinancesInitialized) return;
     window.fixedFinancesInitialized = true;
@@ -38,9 +38,6 @@
             </div>
         `;
         
-        // Botão flutuante para adicionar (opcional)
-        adicionarBotaoFlutuante();
-        
         // Configurar abas
         document.querySelectorAll('.aba-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -51,38 +48,6 @@
                 document.getElementById(aba + 'Panel').classList.add('active');
             });
         });
-    }
-    
-    function adicionarBotaoFlutuante() {
-        var mainContent = document.querySelector('.main-content');
-        if (!mainContent) return;
-        
-        // Verificar se já existe
-        if (document.getElementById('fabBtn')) return;
-        
-        var fab = document.createElement('div');
-        fab.id = 'fabBtn';
-        fab.className = 'fab-button';
-        fab.innerHTML = '+';
-        fab.title = 'Adicionar Receita/Despesa Fixa';
-        fab.addEventListener('click', function() {
-            var abaAtiva = document.querySelector('.aba-btn.active').dataset.aba;
-            var tipo = abaAtiva === 'receitas' ? 'Receita' : 'Despesa';
-            var descricao = prompt('Descrição da ' + tipo + ' Fixa:');
-            if (!descricao) return;
-            var valor = parseFloat(prompt('Valor (R$):'));
-            if (!valor || valor <= 0) return;
-            var pessoa = confirm('Adicionar para LUCAS?') ? 'LUCAS' : 'BEATRIZ';
-            
-            if (abaAtiva === 'receitas') {
-                adicionarReceita(pessoa, descricao, valor);
-            } else {
-                var categoria = prompt('Categoria (Moradia, Serviços, Transporte, Saúde, etc):');
-                var vencimento = parseInt(prompt('Dia de vencimento (1-31):'));
-                adicionarDespesa(pessoa, descricao, valor, categoria || 'Outros', vencimento);
-            }
-        });
-        mainContent.appendChild(fab);
     }
     
     async function carregarReceitas() {
@@ -101,20 +66,6 @@
         window.despesasFixas = data || [];
         renderizarDespesas();
         atualizarForecast();
-    }
-    
-    async function adicionarReceita(pessoa, descricao, valor) {
-        var { error } = await supabase.from('receitas_fixas').insert([{ pessoa, descricao, valor, ativo: true }]);
-        if (error) { alert('Erro: ' + error.message); return; }
-        if (window.showNotification) window.showNotification('✅ Receita fixa adicionada!', 'success');
-        carregarReceitas();
-    }
-    
-    async function adicionarDespesa(pessoa, descricao, valor, categoria, vencimento) {
-        var { error } = await supabase.from('despesas_fixas').insert([{ pessoa, descricao, valor, categoria, vencimento: vencimento || null, ativo: true }]);
-        if (error) { alert('Erro: ' + error.message); return; }
-        if (window.showNotification) window.showNotification('✅ Despesa fixa adicionada!', 'success');
-        carregarDespesas();
     }
     
     async function toggleReceita(id, ativo) {
@@ -190,8 +141,9 @@
     function gerarColunaReceita(titulo, itens, total) {
         var html = '<div class="fixed-col"><div class="col-header" style="background: #3b82f6;">' + titulo + '</div>';
         html += '<div class="col-total" style="background: #dbeafe;">💰 Total: R$ ' + total.toFixed(2) + '</div>';
-        if (itens.length === 0) html += '<div class="col-empty">Nenhuma receita cadastrada</div>';
-        else {
+        if (itens.length === 0) {
+            html += '<div class="col-empty">Nenhuma receita cadastrada</div>';
+        } else {
             for (var i = 0; i < itens.length; i++) {
                 var item = itens[i];
                 var classe = item.ativo ? '' : 'inactive';
@@ -213,8 +165,9 @@
         
         var html = '<div class="fixed-col"><div class="col-header" style="background: #ef4444;">' + titulo + '</div>';
         html += '<div class="col-total" style="background: #fee2e2;">💸 Total: R$ ' + total.toFixed(2) + '</div>';
-        if (itens.length === 0) html += '<div class="col-empty">Nenhuma despesa cadastrada</div>';
-        else {
+        if (itens.length === 0) {
+            html += '<div class="col-empty">Nenhuma despesa cadastrada</div>';
+        } else {
             for (var i = 0; i < itens.length; i++) {
                 var item = itens[i];
                 var classe = item.ativo ? '' : 'inactive';
